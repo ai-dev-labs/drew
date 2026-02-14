@@ -1,0 +1,40 @@
+{
+  "name": "drew",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "bin": {
+    "drew": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "mocha -r ts-node/register tests/**/*.test.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ai-sdk/google": "^3.0.29",
+    "ai": "^6.0.86",
+    "cli-progress": "^3.12.0",
+    "commander": "^14.0.3",
+    "fs-extra": "^11.3.3",
+    "ignore": "^7.0.5",
+    "tree-sitter": "^0.22.4",
+    "tree-sitter-rust": "^0.24.0",
+    "tree-sitter-typescript": "^0.23.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/chai": "^5.2.3",
+    "@types/cli-progress": "^3.11.6",
+    "@types/fs-extra": "^11.0.4",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^25.2.3",
+    "chai": "^6.2.2",
+    "mocha": "^11.7.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

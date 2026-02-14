@@ -1,0 +1,124 @@
+{
+  "nodes": {
+    "src/engine.ts:CodeGraphNode": {
+      "id": "src/engine.ts:CodeGraphNode",
+      "kind": "interface_declaration",
+      "name": "CodeGraphNode",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 298,
+      "end_byte": 559,
+      "start_line": 9,
+      "end_line": 21,
+      "checksum": "fac25669e5d3b36a9d5c7bddaeea3a05c9b3e10e1c61f0dcb29319a569318d0a"
+    },
+    "src/engine.ts:SpecMap": {
+      "id": "src/engine.ts:SpecMap",
+      "kind": "interface_declaration",
+      "name": "SpecMap",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 568,
+      "end_byte": 631,
+      "start_line": 23,
+      "end_line": 25,
+      "checksum": "c3ba3f0b79681fa25da0f38bb745e2c25877bd77e475471b79026dc873ffd11e"
+    },
+    "src/engine.ts:LanguageConfig": {
+      "id": "src/engine.ts:LanguageConfig",
+      "kind": "interface_declaration",
+      "name": "LanguageConfig",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 633,
+      "end_byte": 731,
+      "start_line": 27,
+      "end_line": 31,
+      "checksum": "c7d4dbe5a484929410c7100bc1719d11d1963bf3844fb540c2ddbaea5860334b"
+    },
+    "src/engine.ts:ExtractionEngine": {
+      "id": "src/engine.ts:ExtractionEngine",
+      "kind": "class_declaration",
+      "name": "ExtractionEngine",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 740,
+      "end_byte": 6053,
+      "start_line": 33,
+      "end_line": 171,
+      "checksum": "a1634cd7668257e1e59b3ede7a394c03508557b32a83fcb581d1e97323684f41"
+    },
+    "src/engine.ts:constructor": {
+      "id": "src/engine.ts:constructor",
+      "kind": "method_definition",
+      "name": "constructor",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 856,
+      "end_byte": 2610,
+      "start_line": 37,
+      "end_line": 75,
+      "checksum": "0b8640d9bb5d7e35ec42709942ce888c02790f4faf1ed0067a01e1b4f5a4f13f"
+    },
+    "src/engine.ts:getConfigForFile": {
+      "id": "src/engine.ts:getConfigForFile",
+      "kind": "method_definition",
+      "name": "getConfigForFile",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 2616,
+      "end_byte": 2772,
+      "start_line": 77,
+      "end_line": 80,
+      "checksum": "fec4d558b4945657e9995f8cc05ca4af9db61569fa30c77c738c0e7cda814932"
+    },
+    "src/engine.ts:extractAll": {
+      "id": "src/engine.ts:extractAll",
+      "kind": "method_definition",
+      "name": "extractAll",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 2778,
+      "end_byte": 4527,
+      "start_line": 82,
+      "end_line": 128,
+      "checksum": "c88f6e48c6733ec19625c3cc9b10e3a05677de8219d9d16e822003ed778b4c92"
+    },
+    "src/engine.ts:walk": {
+      "id": "src/engine.ts:walk",
+      "kind": "variable_declarator",
+      "name": "walk",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 3152,
+      "end_byte": 3874,
+      "start_line": 91,
+      "end_line": 107,
+      "checksum": "e64728b6cf2fe8ab9c7d0cb12ff3b63f2a27c342b40f55a1719fd7c6a0dcba9a"
+    },
+    "src/engine.ts:extractFile": {
+      "id": "src/engine.ts:extractFile",
+      "kind": "method_definition",
+      "name": "extractFile",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 4533,
+      "end_byte": 6051,
+      "start_line": 130,
+      "end_line": 170,
+      "checksum": "afb1285e440800ded3bf94ba28b76a14adbfc11490ba7c62b93df95671ed69d4"
+    },
+    "src/engine.ts:saveSpecMap": {
+      "id": "src/engine.ts:saveSpecMap",
+      "kind": "function_declaration",
+      "name": "saveSpecMap",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 6062,
+      "end_byte": 6348,
+      "start_line": 173,
+      "end_line": 178,
+      "checksum": "0c1b0b472f332901b092f246d819bb021aa29aa1778a3dc57ae8baa7db013538"
+    }
+  }
+}
