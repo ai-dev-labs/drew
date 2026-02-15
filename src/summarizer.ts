@@ -29,7 +29,7 @@ export class AISummarizer implements Summarizer {
         }
 
         if (this.settings.provider !== 'google') {
-            throw new Error(`Provider ${this.settings.provider} not implemented yet.`);
+            throw new Error(`Provider ${this.settings.provider} is not yet implemented.`);
         }
 
         const google = createGoogleGenerativeAI({
@@ -57,7 +57,7 @@ export class AISummarizer implements Summarizer {
         }
 
         if (this.settings.provider !== 'google') {
-            throw new Error(`Provider ${this.settings.provider} not implemented yet.`);
+            throw new Error(`Provider ${this.settings.provider} is not yet implemented.`);
         }
 
         const google = createGoogleGenerativeAI({
