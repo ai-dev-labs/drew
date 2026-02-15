@@ -176,6 +176,8 @@ export class ExtractionEngine {
                             specMap.nodes[b.node.id].summary = b.node.summary;
                         }
                     }
+                    // Save progress after each batch
+                    await saveSpecMap(rootPath, specMap);
                 } catch (err) {
                     console.warn(`\nWarning: Batch summarization failed: ${err}`);
                 }
@@ -250,6 +252,9 @@ export class ExtractionEngine {
                             checksum: calculateRequirementChecksum(spec.node_ids)
                         };
                     }
+                    // Save progress after each specification batch
+                    specMap.specifications = specifications;
+                    await saveSpecMap(rootPath, specMap);
                 } catch (err) {
                     console.warn(`\nWarning: Specification generation failed: ${err}`);
                     throw err; // Fail the generation as per RFC
