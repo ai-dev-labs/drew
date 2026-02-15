@@ -176,6 +176,8 @@ export class ExtractionEngine {
                             specMap.nodes[b.node.id].summary = b.node.summary;
                         }
                     }
+                    // Save progress after each batch
+                    await saveSpecMap(rootPath, specMap);
                 } catch (err) {
                     console.warn(`\nWarning: Batch summarization failed: ${err}`);
                 }
@@ -236,25 +238,47 @@ export class ExtractionEngine {
 
             specProgress.start(nodesToSpecialize.length, 0);
 
-            // Group nodes for specialization (e.g., by file or just small batches)
-            const BATCH_SIZE = 10;
-            for (let i = 0; i < nodesToSpecialize.length; i += BATCH_SIZE) {
-                const batch = nodesToSpecialize.slice(i, i + BATCH_SIZE);
+            const MAX_SPEC_BATCH_CHARS = 40000;
+            const MAX_SPEC_BATCH_ITEMS = 30; // Still limit items to avoid output token issues
+
+            let currentBatch: CodeGraphNode[] = [];
+            let currentBatchChars = 0;
+
+            const processSpecBatch = async (batch: CodeGraphNode[]) => {
                 const items = batch.map(n => ({ id: n.id, summary: n.summary! }));
-                
                 try {
-                    const newSpecs = await this.summarizer.specialize(items);
+                    const newSpecs = await this.summarizer!.specialize(items);
                     for (const spec of newSpecs) {
                         specifications[spec.id] = {
                             ...spec,
                             checksum: calculateRequirementChecksum(spec.node_ids)
                         };
                     }
+                    // Save progress after each specification batch
+                    specMap.specifications = specifications;
+                    await saveSpecMap(rootPath, specMap);
                 } catch (err) {
                     console.warn(`\nWarning: Specification generation failed: ${err}`);
                     throw err; // Fail the generation as per RFC
                 }
                 specProgress.increment(batch.length);
+            };
+
+            for (const node of nodesToSpecialize) {
+                const summaryLen = node.summary?.length || 0;
+
+                if (currentBatch.length > 0 && (currentBatchChars + summaryLen > MAX_SPEC_BATCH_CHARS || currentBatch.length >= MAX_SPEC_BATCH_ITEMS)) {
+                    await processSpecBatch(currentBatch);
+                    currentBatch = [];
+                    currentBatchChars = 0;
+                }
+
+                currentBatch.push(node);
+                currentBatchChars += summaryLen;
+            }
+
+            if (currentBatch.length > 0) {
+                await processSpecBatch(currentBatch);
             }
             specProgress.stop();
         }

@@ -59,11 +59,11 @@
       "namespace": [],
       "path": "src/engine.ts",
       "start_byte": 1040,
-      "end_byte": 12154,
+      "end_byte": 12453,
       "start_line": 45,
-      "end_line": 308,
-      "checksum": "971f0c3767903b0aba04eacf5980e1790a65bac30880c8bc159b9f66af91ea00",
-      "summary": "The ExtractionEngine class parses source code files (Rust and TypeScript) to extract code symbols like functions, classes, and modules using Tree-sitter. It manages language configurations and can optionally use an AISummarizer to generate natural language summaries for extracted code nodes and create high-level specifications from these summaries. This class facilitates building a comprehensive code graph, including semantic information and AI-generated documentation."
+      "end_line": 313,
+      "checksum": "270ebef5927fe362ccf988d430402f47666a8503d73f49b55466cb0ed9a58382",
+      "summary": "A class that orchestrates source code symbol extraction and AI-driven summarization for multiple languages using Tree-sitter parsers and queries. It manages file traversal, language configurations, and the generation of a specification layer for the codebase."
     },
     "src/engine.ts:constructor": {
       "id": "src/engine.ts:constructor",
@@ -98,11 +98,11 @@
       "namespace": [],
       "path": "src/engine.ts",
       "start_byte": 3115,
-      "end_byte": 10559,
+      "end_byte": 10858,
       "start_line": 95,
-      "end_line": 263,
-      "checksum": "f05ec76b333570af3ae9f7bc71dc67d66518f69f268b0091f5651423708c05aa",
-      "summary": "The extractAll method orchestrates the complete code analysis pipeline, including file system traversal, code symbol extraction, AI-powered summarization, and specification generation. It reads files within a root path, applies ignore rules, extracts code nodes, and then efficiently summarizes new or changed nodes in batches. Finally, it generates or updates high-level specifications based on these summaries and returns a SpecMap containing all processed information."
+      "end_line": 268,
+      "checksum": "09fd0fe433e9b68c52f7015e87c8c8c2bc24f8fb06c66a6db8b7c4bc3dab8117",
+      "summary": "An asynchronous method that performs a full project scan to extract symbols, applying incremental summarization via checksums and batching new nodes for AI processing. It generates or updates a SpecMap containing code nodes and architectural specifications while providing CLI progress feedback."
     },
     "src/engine.ts:walk": {
       "id": "src/engine.ts:walk",
@@ -124,11 +124,11 @@
       "namespace": [],
       "path": "src/engine.ts",
       "start_byte": 6187,
-      "end_byte": 6958,
+      "end_byte": 7070,
       "start_line": 168,
-      "end_line": 182,
-      "checksum": "0d2c0e114364792c87fa78de193fe05e5138c8c5479296bf2446ffe062bf466a",
-      "summary": "This asynchronous function processes a batch of code symbol items for summarization. It maps items to an expected format, sends them to the AI summarizer, and updates the node summaries in the specMap with the results. It also handles potential summarization errors and increments the progress bar."
+      "end_line": 184,
+      "checksum": "7fd4b458b61ec4333ff4196fe7b737c0d95b7ffb987d48b0922f75ec6968bb96",
+      "summary": "An internal helper function that sends a batch of code snippets to an AI summarizer, updates the associated nodes with generated summaries, and persists the updated SpecMap to disk."
     },
     "src/engine.ts:calculateRequirementChecksum": {
       "id": "src/engine.ts:calculateRequirementChecksum",
@@ -136,10 +136,10 @@
       "name": "calculateRequirementChecksum",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 8042,
-      "end_byte": 8345,
-      "start_line": 209,
-      "end_line": 213,
+      "start_byte": 8154,
+      "end_byte": 8457,
+      "start_line": 211,
+      "end_line": 215,
       "checksum": "b902274a4866d197063d4d8e9bd76c4d78b8112fe040f417fe0e8b403d0e9af5",
       "summary": "This helper function computes a SHA-256 checksum for a given array of code symbol IDs. It sorts the input IDs and concatenates each ID with its corresponding node's checksum from the `specMap`, ensuring a consistent composite string. The resulting string is then hashed to produce a unique checksum, which is used to detect changes in requirements for specifications."
     },
@@ -149,10 +149,10 @@
       "name": "extractFile",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 10565,
-      "end_byte": 12152,
-      "start_line": 265,
-      "end_line": 307,
+      "start_byte": 10864,
+      "end_byte": 12451,
+      "start_line": 270,
+      "end_line": 312,
       "checksum": "312149b2f97bdab7724d58ab36c2ce709d347c979e3b854a0189caa0a514cb21",
       "summary": "Extracts code symbols from a single file based on its language configuration. It parses the file content, applies the language-specific query to find matches, and generates CodeGraphNode objects for each identified symbol."
     },
@@ -162,10 +162,10 @@
       "name": "saveSpecMap",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 12163,
-      "end_byte": 12449,
-      "start_line": 310,
-      "end_line": 315,
+      "start_byte": 12462,
+      "end_byte": 12748,
+      "start_line": 315,
+      "end_line": 320,
       "checksum": "0c1b0b472f332901b092f246d819bb021aa29aa1778a3dc57ae8baa7db013538",
       "summary": "Saves the provided SpecMap to a JSON file named 'spec-map.json' within the '.drew' directory in the project's root path. It ensures the '.drew' directory exists before writing the file with pretty printing."
     },
@@ -328,43 +328,6 @@
       ],
       "checksum": "bdb2cd7ee37b0c4c0578314b877a48ca9c4cb6a84e4ff772e4a9f7f3fd53f34d"
     },
-    "REQ-EXTRACTIONENGINE-1": {
-      "id": "REQ-EXTRACTIONENGINE-1",
-      "description": "The ExtractionEngine SHALL parse source code files to extract code symbols.",
-      "acceptance_criteria": [
-        "The ExtractionEngine SHALL use Tree-sitter for parsing.",
-        "The ExtractionEngine SHALL extract symbols such as functions, classes, and modules.",
-        "The ExtractionEngine SHALL support configurable languages."
-      ],
-      "node_ids": [
-        "src/engine.ts:ExtractionEngine"
-      ],
-      "checksum": "e2de630fb2f1107d0cf607a6b5f4ecf227c8c700d97807cdb89dbecdddb9bcbb"
-    },
-    "REQ-EXTRACTIONENGINE-2": {
-      "id": "REQ-EXTRACTIONENGINE-2",
-      "description": "The ExtractionEngine SHALL generate natural language summaries for extracted code nodes.",
-      "acceptance_criteria": [
-        "The ExtractionEngine MAY use an AISummarizer for generating summaries.",
-        "Summaries SHALL be generated for new or changed nodes."
-      ],
-      "node_ids": [
-        "src/engine.ts:ExtractionEngine"
-      ],
-      "checksum": "e2de630fb2f1107d0cf607a6b5f4ecf227c8c700d97807cdb89dbecdddb9bcbb"
-    },
-    "REQ-EXTRACTIONENGINE-3": {
-      "id": "REQ-EXTRACTIONENGINE-3",
-      "description": "The ExtractionEngine SHALL create high-level specifications from code summaries.",
-      "acceptance_criteria": [
-        "The ExtractionEngine SHALL use AI-generated documentation for specifications.",
-        "The ExtractionEngine SHALL facilitate building a comprehensive code graph."
-      ],
-      "node_ids": [
-        "src/engine.ts:ExtractionEngine"
-      ],
-      "checksum": "e2de630fb2f1107d0cf607a6b5f4ecf227c8c700d97807cdb89dbecdddb9bcbb"
-    },
     "REQ-CONSTRUCTOR-1": {
       "id": "REQ-CONSTRUCTOR-1",
       "description": "The ExtractionEngine SHALL be initialized with configured language support.",
@@ -391,25 +354,6 @@
       ],
       "checksum": "a4a9f82cf124b32d11fc795766862bf0206f5a874862d2280a4380a2b9cc24cd"
     },
-    "REQ-EXTRACTALL-1": {
-      "id": "REQ-EXTRACTALL-1",
-      "description": "The system SHALL orchestrate a complete code analysis pipeline.",
-      "acceptance_criteria": [
-        "extractAll SHALL include file system traversal.",
-        "extractAll SHALL include code symbol extraction.",
-        "extractAll SHALL include AI-powered summarization.",
-        "extractAll SHALL include specification generation.",
-        "extractAll SHALL read files within a root path.",
-        "extractAll SHALL apply ignore rules.",
-        "extractAll SHALL efficiently summarize new or changed nodes in batches.",
-        "extractAll SHALL generate or update high-level specifications.",
-        "extractAll SHALL return a SpecMap with processed information."
-      ],
-      "node_ids": [
-        "src/engine.ts:extractAll"
-      ],
-      "checksum": "3a79928427feff489a59f30c15c38498eac573c4e857545b4a09e645e28d65bf"
-    },
     "REQ-WALK-1": {
       "id": "REQ-WALK-1",
       "description": "The system SHALL recursively traverse directories to identify supported files.",
@@ -424,21 +368,6 @@
         "src/engine.ts:walk"
       ],
       "checksum": "5a417dfb5ad0a6d4111465e2b2b2f12c22d5954c4b52008724f3594a6886e091"
-    },
-    "REQ-PROCESSBATCH-1": {
-      "id": "REQ-PROCESSBATCH-1",
-      "description": "The system SHALL process batches of code symbols for AI summarization.",
-      "acceptance_criteria": [
-        "processBatch SHALL map items to an expected format for the AI summarizer.",
-        "processBatch SHALL send items to the AI summarizer.",
-        "processBatch SHALL update node summaries in the specMap with the results.",
-        "processBatch SHALL handle potential summarization errors.",
-        "processBatch SHALL increment the progress bar."
-      ],
-      "node_ids": [
-        "src/engine.ts:processBatch"
-      ],
-      "checksum": "f08d0d42c5d1f337f94671721fb478bbf1f07abec4558eec2623e4cf6b8293b3"
     },
     "REQ-ENGINE-CHECKSUM-001": {
       "id": "REQ-ENGINE-CHECKSUM-001",
@@ -576,6 +505,68 @@
         "src/summarizer.ts:loadSettings"
       ],
       "checksum": "8852b0f9e0656d73745d794d3c6636b5659041e76fbdef137f564ed78dd73468"
+    },
+    "REQ-01": {
+      "id": "REQ-01",
+      "description": "Where a codebase contains multiple programming languages, the ExtractionEngine shall orchestrate symbol extraction using language-specific Tree-sitter parsers and queries to build an architectural specification layer.",
+      "acceptance_criteria": [
+        "The engine must support file traversal across different language configurations.",
+        "The output must include a specification layer mapping code symbols to architectural definitions."
+      ],
+      "node_ids": [
+        "src/engine.ts:ExtractionEngine"
+      ],
+      "checksum": "689b63bfa6d9e57bc9e50ad071cfa3f7d0b22aad171b14cb4aef78b8ed7a1d79"
+    },
+    "REQ-02": {
+      "id": "REQ-02",
+      "description": "While performing a project scan, the extractAll method shall implement incremental summarization by comparing symbol checksums to identify only new or modified code nodes.",
+      "acceptance_criteria": [
+        "Unchanged nodes must be skipped based on checksum validation.",
+        "New or modified nodes must be added to the processing queue."
+      ],
+      "node_ids": [
+        "src/engine.ts:extractAll"
+      ],
+      "checksum": "11bda9af0bff6772a9675a20bce4e2537dee30d46228f9d53a02b00ede0688ea"
+    },
+    "REQ-03": {
+      "id": "REQ-03",
+      "description": "When new symbols require summarization, the system shall execute processBatch to send code snippets to an AI summarizer and update the associated SpecMap entries.",
+      "acceptance_criteria": [
+        "Code snippets must be batched before being sent to the AI service.",
+        "Generated summaries must be correctly mapped back to their respective symbol nodes."
+      ],
+      "node_ids": [
+        "src/engine.ts:processBatch",
+        "src/engine.ts:extractAll"
+      ],
+      "checksum": "bd1e280ea6ede436773e3d2b0ca6bba5325fe57a60158dac70c5ff1bba4f8212"
+    },
+    "REQ-04": {
+      "id": "REQ-04",
+      "description": "The ExtractionEngine shall persist the updated SpecMap to disk whenever symbol summaries are generated or updated.",
+      "acceptance_criteria": [
+        "The SpecMap file on disk must reflect the most recent AI-generated summaries.",
+        "The system must ensure data integrity during the write operation to the local file system."
+      ],
+      "node_ids": [
+        "src/engine.ts:processBatch",
+        "src/engine.ts:ExtractionEngine"
+      ],
+      "checksum": "15eb04f2ad376a92243e67df498768df9e18ed4f676d87bf21612ea97e06920e"
+    },
+    "REQ-05": {
+      "id": "REQ-05",
+      "description": "While the extraction and summarization process is active, the system shall provide real-time progress feedback to the CLI.",
+      "acceptance_criteria": [
+        "The CLI must display the current status of the project scan and batch processing.",
+        "Users must be able to see the completion percentage or count of processed files."
+      ],
+      "node_ids": [
+        "src/engine.ts:extractAll"
+      ],
+      "checksum": "11bda9af0bff6772a9675a20bce4e2537dee30d46228f9d53a02b00ede0688ea"
     }
   }
 }
