@@ -151,31 +151,46 @@ export class ExtractionEngine {
             
             summarizationProgress.start(nodesToSummarize.length, 0);
 
-            const batchSize = 10;
-            for (let i = 0; i < nodesToSummarize.length; i += batchSize) {
-                const batch = nodesToSummarize.slice(i, i + batchSize);
-                const items = [];
-                for (const node of batch) {
-                    const sourceCode = await fs.readFile(path.join(rootPath, node.path), 'utf8');
-                    items.push({
-                        id: node.id,
-                        code: sourceCode.substring(node.start_byte, node.end_byte)
-                    });
-                }
+            const MAX_BATCH_CHARS = 40000;
+            const MAX_BATCH_ITEMS = 50;
 
+            let currentBatch: { node: CodeGraphNode, code: string }[] = [];
+            let currentBatchChars = 0;
+
+            const processBatch = async (batch: { node: CodeGraphNode, code: string }[]) => {
+                const items = batch.map(b => ({ id: b.node.id, code: b.code }));
                 try {
-                    const batchResults = await this.summarizer.summarizeBatch(items);
-                    for (const node of batch) {
-                        if (batchResults[node.id]) {
-                            node.summary = batchResults[node.id];
-                            specMap.nodes[node.id].summary = node.summary;
+                    const batchResults = await this.summarizer!.summarizeBatch(items);
+                    for (const b of batch) {
+                        if (batchResults[b.node.id]) {
+                            b.node.summary = batchResults[b.node.id];
+                            specMap.nodes[b.node.id].summary = b.node.summary;
                         }
                     }
                 } catch (err) {
                     console.warn(`\nWarning: Batch summarization failed: ${err}`);
                 }
                 summarizationProgress.increment(batch.length);
+            };
+
+            for (const node of nodesToSummarize) {
+                const sourceCode = await fs.readFile(path.join(rootPath, node.path), 'utf8');
+                const nodeCode = sourceCode.substring(node.start_byte, node.end_byte);
+
+                if (currentBatch.length > 0 && (currentBatchChars + nodeCode.length > MAX_BATCH_CHARS || currentBatch.length >= MAX_BATCH_ITEMS)) {
+                    await processBatch(currentBatch);
+                    currentBatch = [];
+                    currentBatchChars = 0;
+                }
+
+                currentBatch.push({ node, code: nodeCode });
+                currentBatchChars += nodeCode.length;
             }
+
+            if (currentBatch.length > 0) {
+                await processBatch(currentBatch);
+            }
+
             summarizationProgress.stop();
         }
 
