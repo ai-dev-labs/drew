@@ -163,11 +163,10 @@
       "namespace": [],
       "path": "src/summarizer.ts",
       "start_byte": 540,
-      "end_byte": 2895,
+      "end_byte": 2901,
       "start_line": 18,
       "end_line": 87,
-      "checksum": "e528c711ba28a0981fa44c373e62c80f7031c41590f6580f706747e89086a67b",
-      "summary": "An implementation of the Summarizer interface that utilizes AI models to generate code summaries. It supports different providers and handles both single and batch summarization requests. It also includes a mock provider for testing."
+      "checksum": "5cd680f4c33e43bda7e1ddaa775098882a63cff132a0858a2558aed8161b80e0"
     },
     "src/summarizer.ts:constructor": {
       "id": "src/summarizer.ts:constructor",
@@ -189,11 +188,10 @@
       "namespace": [],
       "path": "src/summarizer.ts",
       "start_byte": 719,
-      "end_byte": 1424,
+      "end_byte": 1427,
       "start_line": 25,
       "end_line": 45,
-      "checksum": "fa6fc5bf7cbc9e595511c05fcd3603b60a1d390b925963694e1cecf7f2963579",
-      "summary": "Summarizes a given piece of code using the configured AI provider and model. It handles mock provider behavior and throws an error for unsupported providers, defaulting to Google's Generative AI."
+      "checksum": "87904ee158bec3c33e311bf9a7f8a7c0c972c141dc77e991bc94467b49ab73f2"
     },
     "src/summarizer.ts:summarizeBatch": {
       "id": "src/summarizer.ts:summarizeBatch",
@@ -201,12 +199,11 @@
       "name": "summarizeBatch",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 1430,
-      "end_byte": 2893,
+      "start_byte": 1433,
+      "end_byte": 2899,
       "start_line": 47,
       "end_line": 86,
-      "checksum": "3076e91a223774979a3c52d0e84192ba5b4197d2edc866c28a088ed012eca228",
-      "summary": "Summarizes multiple code items concurrently using the configured AI provider. It handles mock provider behavior and ensures results are returned as a record mapping IDs to their summaries. It currently only supports the Google provider for batch operations."
+      "checksum": "50530f34764f1d3e9e4c0641bd4a7e5d1e3a4b314ae901aa1e8d24acdc386572"
     },
     "src/summarizer.ts:loadSettings": {
       "id": "src/summarizer.ts:loadSettings",
@@ -214,25 +211,12 @@
       "name": "loadSettings",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 2904,
-      "end_byte": 3648,
+      "start_byte": 2910,
+      "end_byte": 3654,
       "start_line": 89,
       "end_line": 108,
       "checksum": "d5d8591ce4452d94fc292fdee2d2739b57240cf63b9afbfd47db6d65c0ecad97",
       "summary": "Asynchronously loads summarizer settings from a JSON file located in the user's home directory. It validates the presence of essential keys like 'provider' and 'apiKey', providing default values for the model if not specified."
-    },
-    "tiny_test/hello.ts:hello": {
-      "id": "tiny_test/hello.ts:hello",
-      "kind": "function_declaration",
-      "name": "hello",
-      "namespace": [],
-      "path": "tiny_test/hello.ts",
-      "start_byte": 0,
-      "end_byte": 42,
-      "start_line": 0,
-      "end_line": 0,
-      "checksum": "ebca81e2ee31791e8c77acac32e9847ea0dc22c0d40350f585305d874681774a",
-      "summary": "A simple function named 'hello' that logs the string 'world' to the console when executed."
     }
   }
 }
