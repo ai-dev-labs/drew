@@ -67,6 +67,75 @@ describe('Specification Layer', () => {
         expect(secondSpec.description).to.equal(originalSpec.description);
     });
 
+    it('should not regenerate specifications when multiple nodes exist with different content', async () => {
+        const engine = new ExtractionEngine();
+        
+        const file1 = path.join(tempDir, 'file1.rs');
+        const file2 = path.join(tempDir, 'file2.rs');
+        await fs.writeFile(file1, 'fn func1() { println!("Hello"); }');
+        await fs.writeFile(file2, 'fn func2() { println!("Different"); }');
+
+        // First run
+        const specMap1 = await engine.extractAll(tempDir);
+        expect(Object.keys(specMap1.specifications || {})).to.have.lengthOf(2);
+
+        // Second run with same map
+        // We capture console.log or just check if it was processed.
+        // The mock provider will increment the progress bar which we can't easily check here,
+        // but we can check if the specification objects are the same instances (they should be if not updated).
+        const specMap2 = await engine.extractAll(tempDir, specMap1);
+        
+        expect(specMap2.specifications).to.deep.equal(specMap1.specifications);
+    });
+
+    it('should not regenerate multi-node specifications when nothing changed', async () => {
+        const engine = new ExtractionEngine();
+        
+        const file1 = path.join(tempDir, 'file1.rs');
+        const file2 = path.join(tempDir, 'file2.rs');
+        await fs.writeFile(file1, 'fn func1() { println!("1"); }');
+        await fs.writeFile(file2, 'fn func2() { println!("2"); }');
+
+        // First run to get nodes
+        const specMap1 = await engine.extractAll(tempDir);
+        
+        // Manually create a multi-node spec to simulate LLM behavior
+        const node1 = specMap1.nodes['file1.rs:func1'];
+        const node2 = specMap1.nodes['file2.rs:func2'];
+        
+        // Calculate correct composite checksum
+        const crypto = require('crypto');
+        const sortedIds = [node1.id, node2.id].sort();
+        const composite = sortedIds.map(id => {
+            const node = specMap1.nodes[id];
+            return `${id}:${node.checksum}`;
+        }).join('|');
+        const correctChecksum = crypto.createHash('sha256').update(composite).digest('hex');
+
+        specMap1.specifications = {
+            'MULTI-REQ': {
+                id: 'MULTI-REQ',
+                description: 'Does both',
+                acceptance_criteria: ['Both done'],
+                node_ids: [node1.id, node2.id],
+                checksum: correctChecksum
+            }
+        };
+
+        // Second run with this map
+        const specMap2 = await engine.extractAll(tempDir, specMap1);
+        
+        // If the bug exists, it will try to regenerate specs because node2.checksum != node1.checksum
+        // The mock provider will add REQ-file1.rs:func1 or similar because it thinks node2 is changed/newly uncovered?
+        // Actually, in current code:
+        // coveredNodeIds will have both. isNew will be false.
+        // For node2, existingSpec is MULTI-REQ. existingSpec.checksum (node1.checksum) != node2.checksum.
+        // So nodesToSpecialize will include node2.
+        
+        expect(Object.keys(specMap2.specifications || {})).to.include('MULTI-REQ');
+        expect(Object.keys(specMap2.specifications || {})).to.have.lengthOf(1, 'Should NOT have added new specs');
+    });
+
     it('should regenerate specifications when a node changes', async () => {
         const engine = new ExtractionEngine();
         
