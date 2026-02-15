@@ -46,11 +46,10 @@
       "namespace": [],
       "path": "src/engine.ts",
       "start_byte": 834,
-      "end_byte": 8601,
+      "end_byte": 9206,
       "start_line": 36,
-      "end_line": 227,
-      "checksum": "ad7dba7ab24262efc4aea07ab23104313eaad8ba0cdc9db2f927daa549979691",
-      "summary": "Manages the extraction of code symbols from project files. It is initialized with parsers and language configurations for Rust and TypeScript, and can traverse directories to find and process files."
+      "end_line": 242,
+      "checksum": "8acb44552b890a471641b9d2498c6410b4753d05ba2c6aa61bdf6b4d79280a32"
     },
     "src/engine.ts:constructor": {
       "id": "src/engine.ts:constructor",
@@ -85,11 +84,10 @@
       "namespace": [],
       "path": "src/engine.ts",
       "start_byte": 2909,
-      "end_byte": 7006,
+      "end_byte": 7611,
       "start_line": 86,
-      "end_line": 182,
-      "checksum": "5fb6e6b9b64a278784fca6f92b3c507feecae4b10b01dfe536aeee854cf6b72a",
-      "summary": "Orchestrates the extraction of all code symbols from a given root path. It traverses the directory structure, ignores specified files, extracts symbols from supported file types, and optionally summarizes new or changed symbols using an AI summarizer."
+      "end_line": 197,
+      "checksum": "f1b963a7f5f7951c3940e69ecdb42ad34781b35f49f1ac1f24f1ebc86e23ca5b"
     },
     "src/engine.ts:walk": {
       "id": "src/engine.ts:walk",
@@ -104,16 +102,28 @@
       "checksum": "e64728b6cf2fe8ab9c7d0cb12ff3b63f2a27c342b40f55a1719fd7c6a0dcba9a",
       "summary": "Recursively walks through directories starting from a given directory. It identifies files with supported language configurations, respecting ignore rules, and adds them to a list for processing, while skipping common directories like node_modules."
     },
+    "src/engine.ts:processBatch": {
+      "id": "src/engine.ts:processBatch",
+      "kind": "variable_declarator",
+      "name": "processBatch",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 5981,
+      "end_byte": 6752,
+      "start_line": 159,
+      "end_line": 173,
+      "checksum": "0d2c0e114364792c87fa78de193fe05e5138c8c5479296bf2446ffe062bf466a"
+    },
     "src/engine.ts:extractFile": {
       "id": "src/engine.ts:extractFile",
       "kind": "method_definition",
       "name": "extractFile",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 7012,
-      "end_byte": 8599,
-      "start_line": 184,
-      "end_line": 226,
+      "start_byte": 7617,
+      "end_byte": 9204,
+      "start_line": 199,
+      "end_line": 241,
       "checksum": "312149b2f97bdab7724d58ab36c2ce709d347c979e3b854a0189caa0a514cb21",
       "summary": "Extracts code symbols from a single file based on its language configuration. It parses the file content, applies the language-specific query to find matches, and generates CodeGraphNode objects for each identified symbol."
     },
@@ -123,10 +133,10 @@
       "name": "saveSpecMap",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 8610,
-      "end_byte": 8896,
-      "start_line": 229,
-      "end_line": 234,
+      "start_byte": 9215,
+      "end_byte": 9501,
+      "start_line": 244,
+      "end_line": 249,
       "checksum": "0c1b0b472f332901b092f246d819bb021aa29aa1778a3dc57ae8baa7db013538",
       "summary": "Saves the provided SpecMap to a JSON file named 'spec-map.json' within the '.drew' directory in the project's root path. It ensures the '.drew' directory exists before writing the file with pretty printing."
     },
