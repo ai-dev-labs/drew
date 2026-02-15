@@ -204,30 +204,34 @@ export class ExtractionEngine {
         }
 
         // --- Specification Layer ---
-        specMap.specifications = existingMap?.specifications || {};
-
+        const specifications: Record<string, Requirement> = { ...(existingMap?.specifications || {}) };
         const nodesWithSummaries = Object.values(specMap.nodes).filter(n => n.summary);
         
+        const calculateRequirementChecksum = (nodeIds: string[]) => {
+            const sortedIds = [...nodeIds].sort();
+            const composite = sortedIds.map(id => `${id}:${specMap.nodes[id]?.checksum || ''}`).join('|');
+            return crypto.createHash('sha256').update(composite).digest('hex');
+        };
+
         // Find nodes that need new or updated specifications
-        // For simplicity, we'll check which nodes are not covered by any specification
-        // or if the underlying node checksum has changed.
-        const coveredNodeIds = new Set<string>();
-        for (const spec of Object.values(specMap.specifications)) {
-            for (const nodeId of spec.node_ids) {
-                coveredNodeIds.add(nodeId);
+        const validCoveredNodeIds = new Set<string>();
+        for (const [id, spec] of Object.entries(specifications)) {
+            const currentChecksum = calculateRequirementChecksum(spec.node_ids);
+            if (currentChecksum === spec.checksum) {
+                for (const nodeId of spec.node_ids) {
+                    validCoveredNodeIds.add(nodeId);
+                }
+            } else {
+                delete specifications[id];
             }
         }
 
-        const nodesToSpecialize = nodesWithSummaries.filter(n => {
-            const isNew = !coveredNodeIds.has(n.id);
-            const existingSpec = Object.values(specMap.specifications!).find(s => s.node_ids.includes(n.id));
-            const hasChanged = existingSpec && existingSpec.checksum !== n.checksum;
-            return isNew || hasChanged;
-        });
+        const nodesToSpecialize = nodesWithSummaries.filter(n => !validCoveredNodeIds.has(n.id));
 
         if (nodesToSpecialize.length > 0 && this.summarizer) {
+            console.log(`\nGenerating specifications for ${nodesToSpecialize.length} uncovered/changed nodes...`);
             const specProgress = new cliProgress.SingleBar({
-                format: 'Generating Specs | {bar} | {percentage}% | {value}/{total} Specifications',
+                format: 'Generating Specs | {bar} | {percentage}% | {value}/{total} Nodes',
             }, cliProgress.Presets.shades_classic);
 
             specProgress.start(nodesToSpecialize.length, 0);
@@ -241,12 +245,9 @@ export class ExtractionEngine {
                 try {
                     const newSpecs = await this.summarizer.specialize(items);
                     for (const spec of newSpecs) {
-                        // Use the first node's checksum as the requirement checksum for now
-                        // In a more robust implementation, we'd combine checksums of all linked nodes.
-                        const node = specMap.nodes[spec.node_ids[0]];
-                        specMap.specifications[spec.id] = {
+                        specifications[spec.id] = {
                             ...spec,
-                            checksum: node?.checksum || ''
+                            checksum: calculateRequirementChecksum(spec.node_ids)
                         };
                     }
                 } catch (err) {
@@ -258,6 +259,7 @@ export class ExtractionEngine {
             specProgress.stop();
         }
 
+        specMap.specifications = specifications;
         return specMap;
     }
 

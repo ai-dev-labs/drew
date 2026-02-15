@@ -13,18 +13,31 @@
       "checksum": "0c0333e9ade481d5400f1bf92c226d4651dafd38483e91c10a60e7f2c8f89b4e",
       "summary": "Represents a code symbol within a project's graph. It includes identifying information like kind, name, and path, along with location details (byte offsets, line numbers) and a checksum for content verification."
     },
+    "src/engine.ts:Requirement": {
+      "id": "src/engine.ts:Requirement",
+      "kind": "interface_declaration",
+      "name": "Requirement",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 662,
+      "end_byte": 809,
+      "start_line": 26,
+      "end_line": 32,
+      "checksum": "bead63419832c4da34b683529033a2667c13e4a8632f84b5a2ef8c2bc93df2b9",
+      "summary": "The `Requirement` interface defines a structured representation of a software requirement. It includes a unique identifier, a textual description, a list of acceptance criteria, associated code node IDs, and a checksum for content integrity."
+    },
     "src/engine.ts:SpecMap": {
       "id": "src/engine.ts:SpecMap",
       "kind": "interface_declaration",
       "name": "SpecMap",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 662,
-      "end_byte": 725,
-      "start_line": 26,
-      "end_line": 28,
-      "checksum": "c3ba3f0b79681fa25da0f38bb745e2c25877bd77e475471b79026dc873ffd11e",
-      "summary": "A map containing nodes of CodeGraphNode, keyed by their IDs. This structure likely represents the entire code graph for a project."
+      "start_byte": 818,
+      "end_byte": 931,
+      "start_line": 34,
+      "end_line": 37,
+      "checksum": "3ce5a8edf0496f8ee2ebbd818362c78bee94691018d9b0034c975798670edef7",
+      "summary": "The `SpecMap` interface serves as a comprehensive container for code analysis results, holding a record of `CodeGraphNode` objects by their IDs. Optionally, it can also store a record of `Requirement` objects, effectively mapping the codebase's structure to its formal specifications."
     },
     "src/engine.ts:LanguageConfig": {
       "id": "src/engine.ts:LanguageConfig",
@@ -32,10 +45,10 @@
       "name": "LanguageConfig",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 727,
-      "end_byte": 825,
-      "start_line": 30,
-      "end_line": 34,
+      "start_byte": 933,
+      "end_byte": 1031,
+      "start_line": 39,
+      "end_line": 43,
       "checksum": "c7d4dbe5a484929410c7100bc1719d11d1963bf3844fb540c2ddbaea5860334b",
       "summary": "Configuration object for a specific programming language. It holds the language's parser, a query for extracting symbols, and associated file extensions."
     },
@@ -45,12 +58,12 @@
       "name": "ExtractionEngine",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 834,
-      "end_byte": 9206,
-      "start_line": 36,
-      "end_line": 242,
-      "checksum": "8acb44552b890a471641b9d2498c6410b4753d05ba2c6aa61bdf6b4d79280a32",
-      "summary": "This class is responsible for extracting code symbols from files and generating summaries. It supports Rust and TypeScript, parses code using predefined queries, and utilizes an AI summarizer for generating concise descriptions. The engine handles file traversal, ignores specified files, and processes code in batches for efficient summarization."
+      "start_byte": 1040,
+      "end_byte": 12154,
+      "start_line": 45,
+      "end_line": 308,
+      "checksum": "971f0c3767903b0aba04eacf5980e1790a65bac30880c8bc159b9f66af91ea00",
+      "summary": "The ExtractionEngine class parses source code files (Rust and TypeScript) to extract code symbols like functions, classes, and modules using Tree-sitter. It manages language configurations and can optionally use an AISummarizer to generate natural language summaries for extracted code nodes and create high-level specifications from these summaries. This class facilitates building a comprehensive code graph, including semantic information and AI-generated documentation."
     },
     "src/engine.ts:constructor": {
       "id": "src/engine.ts:constructor",
@@ -58,10 +71,10 @@
       "name": "constructor",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 987,
-      "end_byte": 2741,
-      "start_line": 41,
-      "end_line": 79,
+      "start_byte": 1193,
+      "end_byte": 2947,
+      "start_line": 50,
+      "end_line": 88,
       "checksum": "0b8640d9bb5d7e35ec42709942ce888c02790f4faf1ed0067a01e1b4f5a4f13f",
       "summary": "Initializes the ExtractionEngine by setting up a new Parser instance. It configures language support for Rust and TypeScript, defining specific queries and file extensions for each."
     },
@@ -71,10 +84,10 @@
       "name": "getConfigForFile",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 2747,
-      "end_byte": 2903,
-      "start_line": 81,
-      "end_line": 84,
+      "start_byte": 2953,
+      "end_byte": 3109,
+      "start_line": 90,
+      "end_line": 93,
       "checksum": "fec4d558b4945657e9995f8cc05ca4af9db61569fa30c77c738c0e7cda814932",
       "summary": "Retrieves the LanguageConfig based on the file extension. It looks up the configuration in the engine's internal 'configs' map."
     },
@@ -84,12 +97,12 @@
       "name": "extractAll",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 2909,
-      "end_byte": 7611,
-      "start_line": 86,
-      "end_line": 197,
-      "checksum": "f1b963a7f5f7951c3940e69ecdb42ad34781b35f49f1ac1f24f1ebc86e23ca5b",
-      "summary": "This method orchestrates the extraction of code symbols from a root directory. It loads settings, initializes an AI summarizer, and traverses files while respecting ignore rules. Extracted symbols are stored, and existing summaries are reused if checksums match. It then processes symbols needing summarization in batches, providing progress updates for both extraction and summarization."
+      "start_byte": 3115,
+      "end_byte": 10559,
+      "start_line": 95,
+      "end_line": 263,
+      "checksum": "f05ec76b333570af3ae9f7bc71dc67d66518f69f268b0091f5651423708c05aa",
+      "summary": "The extractAll method orchestrates the complete code analysis pipeline, including file system traversal, code symbol extraction, AI-powered summarization, and specification generation. It reads files within a root path, applies ignore rules, extracts code nodes, and then efficiently summarizes new or changed nodes in batches. Finally, it generates or updates high-level specifications based on these summaries and returns a SpecMap containing all processed information."
     },
     "src/engine.ts:walk": {
       "id": "src/engine.ts:walk",
@@ -97,10 +110,10 @@
       "name": "walk",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 3408,
-      "end_byte": 4130,
-      "start_line": 98,
-      "end_line": 114,
+      "start_byte": 3614,
+      "end_byte": 4336,
+      "start_line": 107,
+      "end_line": 123,
       "checksum": "e64728b6cf2fe8ab9c7d0cb12ff3b63f2a27c342b40f55a1719fd7c6a0dcba9a",
       "summary": "Recursively walks through directories starting from a given directory. It identifies files with supported language configurations, respecting ignore rules, and adds them to a list for processing, while skipping common directories like node_modules."
     },
@@ -110,12 +123,25 @@
       "name": "processBatch",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 5981,
-      "end_byte": 6752,
-      "start_line": 159,
-      "end_line": 173,
+      "start_byte": 6187,
+      "end_byte": 6958,
+      "start_line": 168,
+      "end_line": 182,
       "checksum": "0d2c0e114364792c87fa78de193fe05e5138c8c5479296bf2446ffe062bf466a",
       "summary": "This asynchronous function processes a batch of code symbol items for summarization. It maps items to an expected format, sends them to the AI summarizer, and updates the node summaries in the specMap with the results. It also handles potential summarization errors and increments the progress bar."
+    },
+    "src/engine.ts:calculateRequirementChecksum": {
+      "id": "src/engine.ts:calculateRequirementChecksum",
+      "kind": "variable_declarator",
+      "name": "calculateRequirementChecksum",
+      "namespace": [],
+      "path": "src/engine.ts",
+      "start_byte": 8042,
+      "end_byte": 8345,
+      "start_line": 209,
+      "end_line": 213,
+      "checksum": "b902274a4866d197063d4d8e9bd76c4d78b8112fe040f417fe0e8b403d0e9af5",
+      "summary": "This helper function computes a SHA-256 checksum for a given array of code symbol IDs. It sorts the input IDs and concatenates each ID with its corresponding node's checksum from the `specMap`, ensuring a consistent composite string. The resulting string is then hashed to produce a unique checksum, which is used to detect changes in requirements for specifications."
     },
     "src/engine.ts:extractFile": {
       "id": "src/engine.ts:extractFile",
@@ -123,10 +149,10 @@
       "name": "extractFile",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 7617,
-      "end_byte": 9204,
-      "start_line": 199,
-      "end_line": 241,
+      "start_byte": 10565,
+      "end_byte": 12152,
+      "start_line": 265,
+      "end_line": 307,
       "checksum": "312149b2f97bdab7724d58ab36c2ce709d347c979e3b854a0189caa0a514cb21",
       "summary": "Extracts code symbols from a single file based on its language configuration. It parses the file content, applies the language-specific query to find matches, and generates CodeGraphNode objects for each identified symbol."
     },
@@ -136,10 +162,10 @@
       "name": "saveSpecMap",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 9215,
-      "end_byte": 9501,
-      "start_line": 244,
-      "end_line": 249,
+      "start_byte": 12163,
+      "end_byte": 12449,
+      "start_line": 310,
+      "end_line": 315,
       "checksum": "0c1b0b472f332901b092f246d819bb021aa29aa1778a3dc57ae8baa7db013538",
       "summary": "Saves the provided SpecMap to a JSON file named 'spec-map.json' within the '.drew' directory in the project's root path. It ensures the '.drew' directory exists before writing the file with pretty printing."
     },
@@ -163,11 +189,11 @@
       "namespace": [],
       "path": "src/summarizer.ts",
       "start_byte": 369,
-      "end_byte": 531,
+      "end_byte": 688,
       "start_line": 13,
-      "end_line": 16,
-      "checksum": "e1140807dcfdec2ea2726c926603642d39eae4baca051e41fbe8deaec686632d",
-      "summary": "An interface defining the contract for code summarization. It includes methods for summarizing a single piece of code and for summarizing multiple code items in a batch."
+      "end_line": 17,
+      "checksum": "503fedaa6b1c32d4622ce9eca41c1e848bcf0a42edb80836d7dc6d88ac29ffbb",
+      "summary": "The `Summarizer` interface defines a contract for services capable of generating technical summaries from code snippets and producing structured specifications. It includes methods for single-code summarization, batch summarization by ID, and a `specialize` method for creating formal requirements based on summaries."
     },
     "src/summarizer.ts:AISummarizer": {
       "id": "src/summarizer.ts:AISummarizer",
@@ -175,12 +201,12 @@
       "name": "AISummarizer",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 540,
-      "end_byte": 2901,
-      "start_line": 18,
-      "end_line": 87,
-      "checksum": "5cd680f4c33e43bda7e1ddaa775098882a63cff132a0858a2558aed8161b80e0",
-      "summary": "This class implements the Summarizer interface, providing functionality to summarize code snippets using AI. It supports a 'mock' provider for testing and a 'google' provider for actual summarization via the Google Generative AI API. The class can summarize single code snippets or batches of items, returning results in a structured format."
+      "start_byte": 697,
+      "end_byte": 4718,
+      "start_line": 19,
+      "end_line": 129,
+      "checksum": "270c2c456433fea59e5d3eaa384ba2c890588cea541c276649d6ac882ab39d11",
+      "summary": "The `AISummarizer` class implements the `Summarizer` interface, leveraging external AI models (e.g., Google Generative AI) or a mock provider to perform code summarization and specification generation. It manages API interactions with the chosen AI service, handles batch processing of code snippets, and generates structured requirements from summaries based on provided settings."
     },
     "src/summarizer.ts:constructor": {
       "id": "src/summarizer.ts:constructor",
@@ -188,10 +214,10 @@
       "name": "constructor",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 630,
-      "end_byte": 713,
-      "start_line": 21,
-      "end_line": 23,
+      "start_byte": 787,
+      "end_byte": 870,
+      "start_line": 22,
+      "end_line": 24,
       "checksum": "c4ed2bc2dac90d1a85ca67af5899b38926adb602ad5ef0002ad26c2caee613e3",
       "summary": "The constructor for the AISummarizer class, which initializes the instance with the provided SummarizerSettings."
     },
@@ -201,10 +227,10 @@
       "name": "summarize",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 719,
-      "end_byte": 1427,
-      "start_line": 25,
-      "end_line": 45,
+      "start_byte": 876,
+      "end_byte": 1584,
+      "start_line": 26,
+      "end_line": 46,
       "checksum": "87904ee158bec3c33e311bf9a7f8a7c0c972c141dc77e991bc94467b49ab73f2",
       "summary": "This method generates a concise, technical summary for a single code snippet. It checks the summarizer's provider setting and uses the appropriate AI service (mock or Google Generative AI) to create the summary. The prompt is specifically crafted to request a 1-3 sentence summary."
     },
@@ -214,12 +240,25 @@
       "name": "summarizeBatch",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 1433,
-      "end_byte": 2899,
-      "start_line": 47,
-      "end_line": 86,
+      "start_byte": 1590,
+      "end_byte": 3056,
+      "start_line": 48,
+      "end_line": 87,
       "checksum": "50530f34764f1d3e9e4c0641bd4a7e5d1e3a4b314ae901aa1e8d24acdc386572",
       "summary": "This method efficiently summarizes multiple code snippets in a batch. It handles mock summarization and delegates to the Google Generative AI API for actual summarization, optimizing the process by sending multiple items at once. It uses a predefined schema to ensure the AI returns results in a structured JSON format."
+    },
+    "src/summarizer.ts:specialize": {
+      "id": "src/summarizer.ts:specialize",
+      "kind": "method_definition",
+      "name": "specialize",
+      "namespace": [],
+      "path": "src/summarizer.ts",
+      "start_byte": 3062,
+      "end_byte": 4716,
+      "start_line": 89,
+      "end_line": 128,
+      "checksum": "058a7e52e46b90ed73e3138e3244451b2f0532a2820ab5648d22e441fc9792ba",
+      "summary": "The `specialize` method, part of the `AISummarizer` class, asynchronously generates high-level requirements and acceptance criteria in EARS format from a batch of code symbol summaries. It interacts with an AI model (e.g., Google Generative AI) to process summaries and produce structured requirements, linking each generated requirement to its corresponding original code symbol IDs."
     },
     "src/summarizer.ts:loadSettings": {
       "id": "src/summarizer.ts:loadSettings",
@@ -227,12 +266,316 @@
       "name": "loadSettings",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 2910,
-      "end_byte": 3654,
-      "start_line": 89,
-      "end_line": 108,
+      "start_byte": 4727,
+      "end_byte": 5471,
+      "start_line": 131,
+      "end_line": 150,
       "checksum": "d5d8591ce4452d94fc292fdee2d2739b57240cf63b9afbfd47db6d65c0ecad97",
       "summary": "Asynchronously loads summarizer settings from a JSON file located in the user's home directory. It validates the presence of essential keys like 'provider' and 'apiKey', providing default values for the model if not specified."
+    }
+  },
+  "specifications": {
+    "REQ-CODEGRAPHNODE-1": {
+      "id": "REQ-CODEGRAPHNODE-1",
+      "description": "The system SHALL represent code symbols with identifiable information, location details, and a content verification mechanism.",
+      "acceptance_criteria": [
+        "The CodeGraphNode SHALL include kind, name, and path.",
+        "The CodeGraphNode SHALL include byte_offset and line_number.",
+        "The CodeGraphNode SHALL include a checksum for content verification."
+      ],
+      "node_ids": [
+        "src/engine.ts:CodeGraphNode"
+      ],
+      "checksum": "f033f09f0b282ea42140c7ea9ebe7b5af381f286138ed4cf17b9b4cb4bb5d4be"
+    },
+    "REQ-REQUIREMENT-1": {
+      "id": "REQ-REQUIREMENT-1",
+      "description": "The system SHALL provide a structured representation for software requirements.",
+      "acceptance_criteria": [
+        "A Requirement SHALL have a unique id.",
+        "A Requirement SHALL have a description.",
+        "A Requirement SHALL have acceptance_criteria.",
+        "A Requirement SHALL have associated node_ids.",
+        "A Requirement SHALL have a checksum for content integrity."
+      ],
+      "node_ids": [
+        "src/engine.ts:Requirement"
+      ],
+      "checksum": "debc69e9d1619b615f10b991b0ecedd0bc13ac29396e3592a50473fdda5fe4ed"
+    },
+    "REQ-SPECMAP-1": {
+      "id": "REQ-SPECMAP-1",
+      "description": "The system SHALL maintain a comprehensive map of code analysis results.",
+      "acceptance_criteria": [
+        "The SpecMap SHALL store CodeGraphNode objects by their IDs.",
+        "The SpecMap MAY store Requirement objects."
+      ],
+      "node_ids": [
+        "src/engine.ts:SpecMap"
+      ],
+      "checksum": "5251d581c2f18da83dd8822feb7e5498169297271ed135c28f59025446c2712c"
+    },
+    "REQ-LANGCONFIG-1": {
+      "id": "REQ-LANGCONFIG-1",
+      "description": "The system SHALL support configurable language parsing.",
+      "acceptance_criteria": [
+        "A LanguageConfig SHALL specify the parser for a language.",
+        "A LanguageConfig SHALL specify a query for symbol extraction.",
+        "A LanguageConfig SHALL list associated file_extensions."
+      ],
+      "node_ids": [
+        "src/engine.ts:LanguageConfig"
+      ],
+      "checksum": "bdb2cd7ee37b0c4c0578314b877a48ca9c4cb6a84e4ff772e4a9f7f3fd53f34d"
+    },
+    "REQ-EXTRACTIONENGINE-1": {
+      "id": "REQ-EXTRACTIONENGINE-1",
+      "description": "The ExtractionEngine SHALL parse source code files to extract code symbols.",
+      "acceptance_criteria": [
+        "The ExtractionEngine SHALL use Tree-sitter for parsing.",
+        "The ExtractionEngine SHALL extract symbols such as functions, classes, and modules.",
+        "The ExtractionEngine SHALL support configurable languages."
+      ],
+      "node_ids": [
+        "src/engine.ts:ExtractionEngine"
+      ],
+      "checksum": "e2de630fb2f1107d0cf607a6b5f4ecf227c8c700d97807cdb89dbecdddb9bcbb"
+    },
+    "REQ-EXTRACTIONENGINE-2": {
+      "id": "REQ-EXTRACTIONENGINE-2",
+      "description": "The ExtractionEngine SHALL generate natural language summaries for extracted code nodes.",
+      "acceptance_criteria": [
+        "The ExtractionEngine MAY use an AISummarizer for generating summaries.",
+        "Summaries SHALL be generated for new or changed nodes."
+      ],
+      "node_ids": [
+        "src/engine.ts:ExtractionEngine"
+      ],
+      "checksum": "e2de630fb2f1107d0cf607a6b5f4ecf227c8c700d97807cdb89dbecdddb9bcbb"
+    },
+    "REQ-EXTRACTIONENGINE-3": {
+      "id": "REQ-EXTRACTIONENGINE-3",
+      "description": "The ExtractionEngine SHALL create high-level specifications from code summaries.",
+      "acceptance_criteria": [
+        "The ExtractionEngine SHALL use AI-generated documentation for specifications.",
+        "The ExtractionEngine SHALL facilitate building a comprehensive code graph."
+      ],
+      "node_ids": [
+        "src/engine.ts:ExtractionEngine"
+      ],
+      "checksum": "e2de630fb2f1107d0cf607a6b5f4ecf227c8c700d97807cdb89dbecdddb9bcbb"
+    },
+    "REQ-CONSTRUCTOR-1": {
+      "id": "REQ-CONSTRUCTOR-1",
+      "description": "The ExtractionEngine SHALL be initialized with configured language support.",
+      "acceptance_criteria": [
+        "The constructor SHALL set up a new Parser instance.",
+        "The constructor SHALL configure language support for Rust.",
+        "The constructor SHALL configure language support for TypeScript.",
+        "The constructor SHALL define specific queries and file extensions for each language."
+      ],
+      "node_ids": [
+        "src/engine.ts:constructor"
+      ],
+      "checksum": "a32bc1ae552aac58a8fc5a4df81ff662398c520c2911cc20643a5bf2f10b1beb"
+    },
+    "REQ-GETCONFIGFORFILE-1": {
+      "id": "REQ-GETCONFIGFORFILE-1",
+      "description": "The system SHALL retrieve language configurations based on file extensions.",
+      "acceptance_criteria": [
+        "getConfigForFile SHALL look up the configuration in the engine's internal 'configs' map.",
+        "getConfigForFile SHALL return the correct LanguageConfig for a given file extension."
+      ],
+      "node_ids": [
+        "src/engine.ts:getConfigForFile"
+      ],
+      "checksum": "a4a9f82cf124b32d11fc795766862bf0206f5a874862d2280a4380a2b9cc24cd"
+    },
+    "REQ-EXTRACTALL-1": {
+      "id": "REQ-EXTRACTALL-1",
+      "description": "The system SHALL orchestrate a complete code analysis pipeline.",
+      "acceptance_criteria": [
+        "extractAll SHALL include file system traversal.",
+        "extractAll SHALL include code symbol extraction.",
+        "extractAll SHALL include AI-powered summarization.",
+        "extractAll SHALL include specification generation.",
+        "extractAll SHALL read files within a root path.",
+        "extractAll SHALL apply ignore rules.",
+        "extractAll SHALL efficiently summarize new or changed nodes in batches.",
+        "extractAll SHALL generate or update high-level specifications.",
+        "extractAll SHALL return a SpecMap with processed information."
+      ],
+      "node_ids": [
+        "src/engine.ts:extractAll"
+      ],
+      "checksum": "3a79928427feff489a59f30c15c38498eac573c4e857545b4a09e645e28d65bf"
+    },
+    "REQ-WALK-1": {
+      "id": "REQ-WALK-1",
+      "description": "The system SHALL recursively traverse directories to identify supported files.",
+      "acceptance_criteria": [
+        "walk SHALL start from a given directory.",
+        "walk SHALL identify files with supported language configurations.",
+        "walk SHALL respect ignore rules.",
+        "walk SHALL skip common directories such as node_modules.",
+        "walk SHALL add identified files to a list for processing."
+      ],
+      "node_ids": [
+        "src/engine.ts:walk"
+      ],
+      "checksum": "5a417dfb5ad0a6d4111465e2b2b2f12c22d5954c4b52008724f3594a6886e091"
+    },
+    "REQ-PROCESSBATCH-1": {
+      "id": "REQ-PROCESSBATCH-1",
+      "description": "The system SHALL process batches of code symbols for AI summarization.",
+      "acceptance_criteria": [
+        "processBatch SHALL map items to an expected format for the AI summarizer.",
+        "processBatch SHALL send items to the AI summarizer.",
+        "processBatch SHALL update node summaries in the specMap with the results.",
+        "processBatch SHALL handle potential summarization errors.",
+        "processBatch SHALL increment the progress bar."
+      ],
+      "node_ids": [
+        "src/engine.ts:processBatch"
+      ],
+      "checksum": "f08d0d42c5d1f337f94671721fb478bbf1f07abec4558eec2623e4cf6b8293b3"
+    },
+    "REQ-ENGINE-CHECKSUM-001": {
+      "id": "REQ-ENGINE-CHECKSUM-001",
+      "description": "The system shall compute a SHA-256 checksum for an array of code symbol IDs and their corresponding node checksums to detect changes in specifications.",
+      "acceptance_criteria": [
+        "The checksum shall be computed using the SHA-256 algorithm.",
+        "The checksum calculation shall incorporate sorted input symbol IDs.",
+        "The checksum calculation shall incorporate each symbol ID's corresponding node checksum from the `specMap`.",
+        "The checksum shall consistently reflect changes in the input symbol IDs or their associated node checksums."
+      ],
+      "node_ids": [
+        "src/engine.ts:calculateRequirementChecksum"
+      ],
+      "checksum": "487edbe5648cc1b41737c892988d8b3c651d611d3978dda2d3485fd63ce39126"
+    },
+    "REQ-ENGINE-EXTRACT-001": {
+      "id": "REQ-ENGINE-EXTRACT-001",
+      "description": "The system shall extract code symbols from a given file based on its language configuration.",
+      "acceptance_criteria": [
+        "The system shall successfully parse the content of the provided file.",
+        "The system shall apply language-specific queries to identify code symbols within the file.",
+        "The system shall generate `CodeGraphNode` objects for each identified code symbol."
+      ],
+      "node_ids": [
+        "src/engine.ts:extractFile"
+      ],
+      "checksum": "0991b6862e29287251be266acd5e6bb28805fb3a14613aa029a3cfc95727944b"
+    },
+    "REQ-ENGINE-SAVEMAP-001": {
+      "id": "REQ-ENGINE-SAVEMAP-001",
+      "description": "The system shall save the generated `SpecMap` to a JSON file named 'spec-map.json' within the '.drew' directory in the project's root path.",
+      "acceptance_criteria": [
+        "The file shall be named 'spec-map.json'.",
+        "The file shall be located in the '.drew' directory.",
+        "The '.drew' directory shall be created if it does not already exist.",
+        "The JSON file content shall be pretty-printed for readability."
+      ],
+      "node_ids": [
+        "src/engine.ts:saveSpecMap"
+      ],
+      "checksum": "32ed78f171849583c3005ba2c9a4ee84d6ccee0e87f6656e41f8302221f45f22"
+    },
+    "REQ-SUMMARIZER-SETTINGS-001": {
+      "id": "REQ-SUMMARIZER-SETTINGS-001",
+      "description": "The system shall allow configuration of summarizer settings, including the AI provider, the specific model to use, and the API key for authentication.",
+      "acceptance_criteria": [
+        "The configuration shall support AI providers 'google', 'openai', 'anthropic', and 'mock'.",
+        "The configuration shall specify the exact AI model to be utilized.",
+        "The configuration shall include an API key for authentication with external AI services."
+      ],
+      "node_ids": [
+        "src/summarizer.ts:SummarizerSettings"
+      ],
+      "checksum": "0d896dbff0ecb0a8a2168c3e61481284062a8b30f18cad4b0f46d24ef6186fbf"
+    },
+    "REQ-SUMMARIZER-INTERFACE-001": {
+      "id": "REQ-SUMMARIZER-INTERFACE-001",
+      "description": "The system shall provide an interface for services capable of generating technical summaries from code snippets and producing structured specifications.",
+      "acceptance_criteria": [
+        "The interface shall define a method for summarizing a single code snippet.",
+        "The interface shall define a method for summarizing multiple code snippets in a batch by ID.",
+        "The interface shall define a `specialize` method for creating formal requirements based on summaries."
+      ],
+      "node_ids": [
+        "src/summarizer.ts:Summarizer"
+      ],
+      "checksum": "d75a53ed41ef2beb05da847d6745230415594c60fd04879d7d5fee8b430a648a"
+    },
+    "REQ-SUMMARIZER-AI-001": {
+      "id": "REQ-SUMMARIZER-AI-001",
+      "description": "The system shall implement the `Summarizer` interface using external AI models or a mock provider to perform code summarization and specification generation.",
+      "acceptance_criteria": [
+        "The implementation shall manage API interactions with the chosen AI service.",
+        "The implementation shall support batch processing of code snippets for summarization.",
+        "The implementation shall generate structured requirements from summaries based on provided settings.",
+        "The implementation shall initialize with specified summarizer settings upon construction."
+      ],
+      "node_ids": [
+        "src/summarizer.ts:AISummarizer",
+        "src/summarizer.ts:constructor"
+      ],
+      "checksum": "135fe96d536519c64022acae90a1e6314289f5f00e9d3673dfe5647e2f81d4ce"
+    },
+    "REQ-SUMMARIZER-SINGLE-001": {
+      "id": "REQ-SUMMARIZER-SINGLE-001",
+      "description": "When provided a single code snippet, the system shall generate a concise, technical summary of 1-3 sentences.",
+      "acceptance_criteria": [
+        "The generated summary shall be between 1 and 3 sentences in length.",
+        "The system shall utilize the configured AI provider (mock or Google Generative AI) for summarization.",
+        "The summary shall accurately reflect the technical purpose of the provided code snippet."
+      ],
+      "node_ids": [
+        "src/summarizer.ts:summarize"
+      ],
+      "checksum": "70732bd436c1db7d8d9fd19a377f6f04b4009b739be69b7c1a6462c779ace40f"
+    },
+    "REQ-SUMMARIZER-BATCH-001": {
+      "id": "REQ-SUMMARIZER-BATCH-001",
+      "description": "The system shall efficiently summarize multiple code snippets in a batch.",
+      "acceptance_criteria": [
+        "The system shall handle mock summarization for batch operations.",
+        "The system shall delegate batch summarization to the Google Generative AI API for non-mock providers.",
+        "The AI shall return structured results in JSON format according to a predefined schema.",
+        "The batch process shall optimize by sending multiple code snippets simultaneously."
+      ],
+      "node_ids": [
+        "src/summarizer.ts:summarizeBatch"
+      ],
+      "checksum": "4c210fe1ecf9e3159f408cba0b4da859babb935cfaaf849ccc51cafeb448ad1e"
+    },
+    "REQ-SUMMARIZER-SPECIALIZE-001": {
+      "id": "REQ-SUMMARIZER-SPECIALIZE-001",
+      "description": "The system shall asynchronously generate high-level requirements and acceptance criteria in EARS format from a batch of code symbol summaries.",
+      "acceptance_criteria": [
+        "The generated requirements and acceptance criteria shall adhere to the EARS format.",
+        "The system shall interact with an AI model (e.g., Google Generative AI) to process summaries and produce requirements.",
+        "Each generated requirement shall be explicitly linked to its corresponding original code symbol IDs."
+      ],
+      "node_ids": [
+        "src/summarizer.ts:specialize"
+      ],
+      "checksum": "04e31933c28fc1bcc0d036a5ca6b1be99da17d6f6817d4c31acd6473721c9a2b"
+    },
+    "REQ-SUM-SETTINGS-001": {
+      "id": "REQ-SUM-SETTINGS-001",
+      "description": "The summarizer system SHALL asynchronously load configuration settings from a user-specific JSON file located in the user's home directory.",
+      "acceptance_criteria": [
+        "The system SHALL load settings asynchronously.",
+        "The system SHALL load settings from a JSON file in the user's home directory.",
+        "The system SHALL validate the presence of a 'provider' key within the loaded settings.",
+        "The system SHALL validate the presence of an 'apiKey' key within the loaded settings.",
+        "The system SHALL apply a default value for the 'model' key if it is not specified in the loaded settings."
+      ],
+      "node_ids": [
+        "src/summarizer.ts:loadSettings"
+      ],
+      "checksum": "8852b0f9e0656d73745d794d3c6636b5659041e76fbdef137f564ed78dd73468"
     }
   }
 }
