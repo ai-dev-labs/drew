@@ -43,7 +43,11 @@ program
             await saveSpecMap(absolutePath, specMap);
             console.log(`Extracted ${Object.keys(specMap.nodes).length} nodes to .drew/spec-map.json`);
         } catch (err: any) {
-            console.error(`Error: ${err.message}`);
+            if (err.message.includes('Quota exceeded') || err.message.includes('429')) {
+                console.error(`Error: LLM Rate limit exceeded. Please wait a moment and try again.`);
+            } else {
+                console.error(`Error: ${err.message}`);
+            }
             process.exit(1);
         }
     });

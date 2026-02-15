@@ -116,8 +116,12 @@ export class ExtractionEngine {
 
         await walk(rootPath);
 
-        const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
-        progressBar.start(files.length, 0);
+        const allNodes: CodeGraphNode[] = [];
+        const extractionProgress = new cliProgress.SingleBar({
+            format: 'Extracting | {bar} | {percentage}% | {value}/{total} Files',
+        }, cliProgress.Presets.shades_classic);
+        
+        extractionProgress.start(files.length, 0);
 
         for (const filePath of files) {
             try {
@@ -127,20 +131,54 @@ export class ExtractionEngine {
                     const existingNode = existingMap?.nodes[node.id];
                     if (existingNode && existingNode.checksum === node.checksum && existingNode.summary) {
                         node.summary = existingNode.summary;
-                    } else if (this.summarizer) {
-                        const symbolSource = sourceCode.substring(node.start_byte, node.end_byte);
-                        node.summary = await this.summarizer.summarize(symbolSource);
                     }
+                    allNodes.push(node);
                     specMap.nodes[node.id] = node;
                 }
             } catch (err) {
                 console.warn(`\nWarning: Failed to extract from ${filePath}: ${err}`);
                 throw err;
             }
-            progressBar.increment();
+            extractionProgress.increment();
+        }
+        extractionProgress.stop();
+
+        const nodesToSummarize = allNodes.filter(n => !n.summary);
+        if (nodesToSummarize.length > 0 && this.summarizer) {
+            const summarizationProgress = new cliProgress.SingleBar({
+                format: 'Summarizing | {bar} | {percentage}% | {value}/{total} Symbols',
+            }, cliProgress.Presets.shades_classic);
+            
+            summarizationProgress.start(nodesToSummarize.length, 0);
+
+            const batchSize = 10;
+            for (let i = 0; i < nodesToSummarize.length; i += batchSize) {
+                const batch = nodesToSummarize.slice(i, i + batchSize);
+                const items = [];
+                for (const node of batch) {
+                    const sourceCode = await fs.readFile(path.join(rootPath, node.path), 'utf8');
+                    items.push({
+                        id: node.id,
+                        code: sourceCode.substring(node.start_byte, node.end_byte)
+                    });
+                }
+
+                try {
+                    const batchResults = await this.summarizer.summarizeBatch(items);
+                    for (const node of batch) {
+                        if (batchResults[node.id]) {
+                            node.summary = batchResults[node.id];
+                            specMap.nodes[node.id].summary = node.summary;
+                        }
+                    }
+                } catch (err) {
+                    console.warn(`\nWarning: Batch summarization failed: ${err}`);
+                }
+                summarizationProgress.increment(batch.length);
+            }
+            summarizationProgress.stop();
         }
 
-        progressBar.stop();
         return specMap;
     }
 

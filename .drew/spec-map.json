@@ -6,11 +6,12 @@
       "name": "CodeGraphNode",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 298,
-      "end_byte": 559,
-      "start_line": 9,
-      "end_line": 21,
-      "checksum": "fac25669e5d3b36a9d5c7bddaeea3a05c9b3e10e1c61f0dcb29319a569318d0a"
+      "start_byte": 370,
+      "end_byte": 653,
+      "start_line": 11,
+      "end_line": 24,
+      "checksum": "0c0333e9ade481d5400f1bf92c226d4651dafd38483e91c10a60e7f2c8f89b4e",
+      "summary": "Represents a code symbol within a project's graph. It includes identifying information like kind, name, and path, along with location details (byte offsets, line numbers) and a checksum for content verification."
     },
     "src/engine.ts:SpecMap": {
       "id": "src/engine.ts:SpecMap",
@@ -18,11 +19,12 @@
       "name": "SpecMap",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 568,
-      "end_byte": 631,
-      "start_line": 23,
-      "end_line": 25,
-      "checksum": "c3ba3f0b79681fa25da0f38bb745e2c25877bd77e475471b79026dc873ffd11e"
+      "start_byte": 662,
+      "end_byte": 725,
+      "start_line": 26,
+      "end_line": 28,
+      "checksum": "c3ba3f0b79681fa25da0f38bb745e2c25877bd77e475471b79026dc873ffd11e",
+      "summary": "A map containing nodes of CodeGraphNode, keyed by their IDs. This structure likely represents the entire code graph for a project."
     },
     "src/engine.ts:LanguageConfig": {
       "id": "src/engine.ts:LanguageConfig",
@@ -30,11 +32,12 @@
       "name": "LanguageConfig",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 633,
-      "end_byte": 731,
-      "start_line": 27,
-      "end_line": 31,
-      "checksum": "c7d4dbe5a484929410c7100bc1719d11d1963bf3844fb540c2ddbaea5860334b"
+      "start_byte": 727,
+      "end_byte": 825,
+      "start_line": 30,
+      "end_line": 34,
+      "checksum": "c7d4dbe5a484929410c7100bc1719d11d1963bf3844fb540c2ddbaea5860334b",
+      "summary": "Configuration object for a specific programming language. It holds the language's parser, a query for extracting symbols, and associated file extensions."
     },
     "src/engine.ts:ExtractionEngine": {
       "id": "src/engine.ts:ExtractionEngine",
@@ -42,11 +45,12 @@
       "name": "ExtractionEngine",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 740,
-      "end_byte": 6053,
-      "start_line": 33,
-      "end_line": 171,
-      "checksum": "a1634cd7668257e1e59b3ede7a394c03508557b32a83fcb581d1e97323684f41"
+      "start_byte": 834,
+      "end_byte": 8601,
+      "start_line": 36,
+      "end_line": 227,
+      "checksum": "ad7dba7ab24262efc4aea07ab23104313eaad8ba0cdc9db2f927daa549979691",
+      "summary": "Manages the extraction of code symbols from project files. It is initialized with parsers and language configurations for Rust and TypeScript, and can traverse directories to find and process files."
     },
     "src/engine.ts:constructor": {
       "id": "src/engine.ts:constructor",
@@ -54,11 +58,12 @@
       "name": "constructor",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 856,
-      "end_byte": 2610,
-      "start_line": 37,
-      "end_line": 75,
-      "checksum": "0b8640d9bb5d7e35ec42709942ce888c02790f4faf1ed0067a01e1b4f5a4f13f"
+      "start_byte": 987,
+      "end_byte": 2741,
+      "start_line": 41,
+      "end_line": 79,
+      "checksum": "0b8640d9bb5d7e35ec42709942ce888c02790f4faf1ed0067a01e1b4f5a4f13f",
+      "summary": "Initializes the ExtractionEngine by setting up a new Parser instance. It configures language support for Rust and TypeScript, defining specific queries and file extensions for each."
     },
     "src/engine.ts:getConfigForFile": {
       "id": "src/engine.ts:getConfigForFile",
@@ -66,11 +71,12 @@
       "name": "getConfigForFile",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 2616,
-      "end_byte": 2772,
-      "start_line": 77,
-      "end_line": 80,
-      "checksum": "fec4d558b4945657e9995f8cc05ca4af9db61569fa30c77c738c0e7cda814932"
+      "start_byte": 2747,
+      "end_byte": 2903,
+      "start_line": 81,
+      "end_line": 84,
+      "checksum": "fec4d558b4945657e9995f8cc05ca4af9db61569fa30c77c738c0e7cda814932",
+      "summary": "Retrieves the LanguageConfig based on the file extension. It looks up the configuration in the engine's internal 'configs' map."
     },
     "src/engine.ts:extractAll": {
       "id": "src/engine.ts:extractAll",
@@ -78,11 +84,12 @@
       "name": "extractAll",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 2778,
-      "end_byte": 4527,
-      "start_line": 82,
-      "end_line": 128,
-      "checksum": "c88f6e48c6733ec19625c3cc9b10e3a05677de8219d9d16e822003ed778b4c92"
+      "start_byte": 2909,
+      "end_byte": 7006,
+      "start_line": 86,
+      "end_line": 182,
+      "checksum": "5fb6e6b9b64a278784fca6f92b3c507feecae4b10b01dfe536aeee854cf6b72a",
+      "summary": "Orchestrates the extraction of all code symbols from a given root path. It traverses the directory structure, ignores specified files, extracts symbols from supported file types, and optionally summarizes new or changed symbols using an AI summarizer."
     },
     "src/engine.ts:walk": {
       "id": "src/engine.ts:walk",
@@ -90,11 +97,12 @@
       "name": "walk",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 3152,
-      "end_byte": 3874,
-      "start_line": 91,
-      "end_line": 107,
-      "checksum": "e64728b6cf2fe8ab9c7d0cb12ff3b63f2a27c342b40f55a1719fd7c6a0dcba9a"
+      "start_byte": 3408,
+      "end_byte": 4130,
+      "start_line": 98,
+      "end_line": 114,
+      "checksum": "e64728b6cf2fe8ab9c7d0cb12ff3b63f2a27c342b40f55a1719fd7c6a0dcba9a",
+      "summary": "Recursively walks through directories starting from a given directory. It identifies files with supported language configurations, respecting ignore rules, and adds them to a list for processing, while skipping common directories like node_modules."
     },
     "src/engine.ts:extractFile": {
       "id": "src/engine.ts:extractFile",
@@ -102,11 +110,12 @@
       "name": "extractFile",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 4533,
-      "end_byte": 6051,
-      "start_line": 130,
-      "end_line": 170,
-      "checksum": "afb1285e440800ded3bf94ba28b76a14adbfc11490ba7c62b93df95671ed69d4"
+      "start_byte": 7012,
+      "end_byte": 8599,
+      "start_line": 184,
+      "end_line": 226,
+      "checksum": "312149b2f97bdab7724d58ab36c2ce709d347c979e3b854a0189caa0a514cb21",
+      "summary": "Extracts code symbols from a single file based on its language configuration. It parses the file content, applies the language-specific query to find matches, and generates CodeGraphNode objects for each identified symbol."
     },
     "src/engine.ts:saveSpecMap": {
       "id": "src/engine.ts:saveSpecMap",
@@ -114,11 +123,116 @@
       "name": "saveSpecMap",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 6062,
-      "end_byte": 6348,
-      "start_line": 173,
-      "end_line": 178,
-      "checksum": "0c1b0b472f332901b092f246d819bb021aa29aa1778a3dc57ae8baa7db013538"
+      "start_byte": 8610,
+      "end_byte": 8896,
+      "start_line": 229,
+      "end_line": 234,
+      "checksum": "0c1b0b472f332901b092f246d819bb021aa29aa1778a3dc57ae8baa7db013538",
+      "summary": "Saves the provided SpecMap to a JSON file named 'spec-map.json' within the '.drew' directory in the project's root path. It ensures the '.drew' directory exists before writing the file with pretty printing."
+    },
+    "src/summarizer.ts:SummarizerSettings": {
+      "id": "src/summarizer.ts:SummarizerSettings",
+      "kind": "interface_declaration",
+      "name": "SummarizerSettings",
+      "namespace": [],
+      "path": "src/summarizer.ts",
+      "start_byte": 231,
+      "end_byte": 360,
+      "start_line": 7,
+      "end_line": 11,
+      "checksum": "d83a16c9db5eb3856bfe86a6067a1d33f3169cb4a12a7a710f7185c2ccb6c2bf",
+      "summary": "Defines the configuration for a summarizer, including the AI provider ('google', 'openai', 'anthropic', 'mock'), the specific model to use, and the API key for authentication."
+    },
+    "src/summarizer.ts:Summarizer": {
+      "id": "src/summarizer.ts:Summarizer",
+      "kind": "interface_declaration",
+      "name": "Summarizer",
+      "namespace": [],
+      "path": "src/summarizer.ts",
+      "start_byte": 369,
+      "end_byte": 531,
+      "start_line": 13,
+      "end_line": 16,
+      "checksum": "e1140807dcfdec2ea2726c926603642d39eae4baca051e41fbe8deaec686632d",
+      "summary": "An interface defining the contract for code summarization. It includes methods for summarizing a single piece of code and for summarizing multiple code items in a batch."
+    },
+    "src/summarizer.ts:AISummarizer": {
+      "id": "src/summarizer.ts:AISummarizer",
+      "kind": "class_declaration",
+      "name": "AISummarizer",
+      "namespace": [],
+      "path": "src/summarizer.ts",
+      "start_byte": 540,
+      "end_byte": 2895,
+      "start_line": 18,
+      "end_line": 87,
+      "checksum": "e528c711ba28a0981fa44c373e62c80f7031c41590f6580f706747e89086a67b",
+      "summary": "An implementation of the Summarizer interface that utilizes AI models to generate code summaries. It supports different providers and handles both single and batch summarization requests. It also includes a mock provider for testing."
+    },
+    "src/summarizer.ts:constructor": {
+      "id": "src/summarizer.ts:constructor",
+      "kind": "method_definition",
+      "name": "constructor",
+      "namespace": [],
+      "path": "src/summarizer.ts",
+      "start_byte": 630,
+      "end_byte": 713,
+      "start_line": 21,
+      "end_line": 23,
+      "checksum": "c4ed2bc2dac90d1a85ca67af5899b38926adb602ad5ef0002ad26c2caee613e3",
+      "summary": "The constructor for the AISummarizer class, which initializes the instance with the provided SummarizerSettings."
+    },
+    "src/summarizer.ts:summarize": {
+      "id": "src/summarizer.ts:summarize",
+      "kind": "method_definition",
+      "name": "summarize",
+      "namespace": [],
+      "path": "src/summarizer.ts",
+      "start_byte": 719,
+      "end_byte": 1424,
+      "start_line": 25,
+      "end_line": 45,
+      "checksum": "fa6fc5bf7cbc9e595511c05fcd3603b60a1d390b925963694e1cecf7f2963579",
+      "summary": "Summarizes a given piece of code using the configured AI provider and model. It handles mock provider behavior and throws an error for unsupported providers, defaulting to Google's Generative AI."
+    },
+    "src/summarizer.ts:summarizeBatch": {
+      "id": "src/summarizer.ts:summarizeBatch",
+      "kind": "method_definition",
+      "name": "summarizeBatch",
+      "namespace": [],
+      "path": "src/summarizer.ts",
+      "start_byte": 1430,
+      "end_byte": 2893,
+      "start_line": 47,
+      "end_line": 86,
+      "checksum": "3076e91a223774979a3c52d0e84192ba5b4197d2edc866c28a088ed012eca228",
+      "summary": "Summarizes multiple code items concurrently using the configured AI provider. It handles mock provider behavior and ensures results are returned as a record mapping IDs to their summaries. It currently only supports the Google provider for batch operations."
+    },
+    "src/summarizer.ts:loadSettings": {
+      "id": "src/summarizer.ts:loadSettings",
+      "kind": "function_declaration",
+      "name": "loadSettings",
+      "namespace": [],
+      "path": "src/summarizer.ts",
+      "start_byte": 2904,
+      "end_byte": 3648,
+      "start_line": 89,
+      "end_line": 108,
+      "checksum": "d5d8591ce4452d94fc292fdee2d2739b57240cf63b9afbfd47db6d65c0ecad97",
+      "summary": "Asynchronously loads summarizer settings from a JSON file located in the user's home directory. It validates the presence of essential keys like 'provider' and 'apiKey', providing default values for the model if not specified."
+    },
+    "tiny_test/hello.ts:hello": {
+      "id": "tiny_test/hello.ts:hello",
+      "kind": "function_declaration",
+      "name": "hello",
+      "namespace": [],
+      "path": "tiny_test/hello.ts",
+      "start_byte": 0,
+      "end_byte": 42,
+      "start_line": 0,
+      "end_line": 0,
+      "checksum": "ebca81e2ee31791e8c77acac32e9847ea0dc22c0d40350f585305d874681774a",
+      "summary": "A simple function named 'hello' that logs the string 'world' to the console when executed."
     }
   }
 }
