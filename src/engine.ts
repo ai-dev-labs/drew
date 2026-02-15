@@ -204,8 +204,7 @@ export class ExtractionEngine {
         }
 
         // --- Specification Layer ---
-        specMap.specifications = existingMap?.specifications || {};
-
+        const specifications: Record<string, Requirement> = { ...(existingMap?.specifications || {}) };
         const nodesWithSummaries = Object.values(specMap.nodes).filter(n => n.summary);
         
         const calculateRequirementChecksum = (nodeIds: string[]) => {
@@ -216,23 +215,23 @@ export class ExtractionEngine {
 
         // Find nodes that need new or updated specifications
         const validCoveredNodeIds = new Set<string>();
-        for (const spec of Object.values(specMap.specifications)) {
+        for (const [id, spec] of Object.entries(specifications)) {
             const currentChecksum = calculateRequirementChecksum(spec.node_ids);
             if (currentChecksum === spec.checksum) {
                 for (const nodeId of spec.node_ids) {
                     validCoveredNodeIds.add(nodeId);
                 }
             } else {
-                // Remove invalid spec from the map so it can be replaced
-                delete specMap.specifications[spec.id];
+                delete specifications[id];
             }
         }
 
         const nodesToSpecialize = nodesWithSummaries.filter(n => !validCoveredNodeIds.has(n.id));
 
         if (nodesToSpecialize.length > 0 && this.summarizer) {
+            console.log(`\nGenerating specifications for ${nodesToSpecialize.length} uncovered/changed nodes...`);
             const specProgress = new cliProgress.SingleBar({
-                format: 'Generating Specs | {bar} | {percentage}% | {value}/{total} Specifications',
+                format: 'Generating Specs | {bar} | {percentage}% | {value}/{total} Nodes',
             }, cliProgress.Presets.shades_classic);
 
             specProgress.start(nodesToSpecialize.length, 0);
@@ -246,7 +245,7 @@ export class ExtractionEngine {
                 try {
                     const newSpecs = await this.summarizer.specialize(items);
                     for (const spec of newSpecs) {
-                        specMap.specifications![spec.id] = {
+                        specifications[spec.id] = {
                             ...spec,
                             checksum: calculateRequirementChecksum(spec.node_ids)
                         };
@@ -260,6 +259,7 @@ export class ExtractionEngine {
             specProgress.stop();
         }
 
+        specMap.specifications = specifications;
         return specMap;
     }
 
