@@ -12,8 +12,8 @@
     "test": "mocha -r ts-node/register tests/**/*.test.ts"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "klxdev",
+  "license": "MIT",
   "dependencies": {
     "@ai-sdk/google": "^3.0.29",
     "ai": "^6.0.86",
