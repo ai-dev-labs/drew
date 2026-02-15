@@ -14,6 +14,7 @@ export interface SummarizerSettings {
 export interface Summarizer {
     summarize(code: string): Promise<string>;
     summarizeBatch(items: { id: string, code: string }[]): Promise<Record<string, string>>;
+    specialize(items: { id: string, summary: string }[]): Promise<{ id: string, description: string, acceptance_criteria: string[], node_ids: string[] }[]>;
 }
 
 export class AISummarizer implements Summarizer {
@@ -84,6 +85,47 @@ ${items.map(item => `ID: ${item.id}\nCODE:\n${item.code}\n---`).join('\n')}`
             results[item.id] = item.summary;
         }
         return results;
+    }
+
+    async specialize(items: { id: string, summary: string }[]): Promise<{ id: string, description: string, acceptance_criteria: string[], node_ids: string[] }[] > {
+        if (items.length === 0) return [];
+
+        if (this.settings.provider === 'mock') {
+            return items.map(item => ({
+                id: `req-${item.id}`,
+                description: `EARS Requirement for ${item.id}: The system shall process ${item.id} correctly.`,
+                acceptance_criteria: [`${item.id} is processed.`],
+                node_ids: [item.id]
+            }));
+        }
+
+        if (this.settings.provider !== 'google') {
+            throw new Error(`Provider ${this.settings.provider} is not yet implemented.`);
+        }
+
+        const google = createGoogleGenerativeAI({
+            apiKey: this.settings.apiKey
+        });
+
+        const { object } = await generateObject({
+            model: google(this.settings.model),
+            schema: z.object({
+                specifications: z.array(z.object({
+                    id: z.string(),
+                    description: z.string(),
+                    acceptance_criteria: z.array(z.string()),
+                    node_ids: z.array(z.string())
+                }))
+            }),
+            maxRetries: 5,
+            prompt: `Based on the following code symbol summaries, generate high-level requirements and acceptance criteria in EARS format.
+Link each requirement to the corresponding symbol IDs.
+Return a JSON object with a 'specifications' array.
+
+${items.map(item => `ID: ${item.id}\nSUMMARY: ${item.summary}\n---`).join('\n')}`
+        });
+
+        return object.specifications;
     }
 }
 

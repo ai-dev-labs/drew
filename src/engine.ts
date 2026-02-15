@@ -24,8 +24,17 @@ export interface CodeGraphNode {
     summary?: string;
 }
 
+export interface Requirement {
+    id: string;
+    description: string;
+    acceptance_criteria: string[];
+    node_ids: string[];
+    checksum: string;
+}
+
 export interface SpecMap {
     nodes: Record<string, CodeGraphNode>;
+    specifications?: Record<string, Requirement>;
 }
 
 interface LanguageConfig {
@@ -192,6 +201,61 @@ export class ExtractionEngine {
             }
 
             summarizationProgress.stop();
+        }
+
+        // --- Specification Layer ---
+        specMap.specifications = existingMap?.specifications || {};
+
+        const nodesWithSummaries = Object.values(specMap.nodes).filter(n => n.summary);
+        
+        // Find nodes that need new or updated specifications
+        // For simplicity, we'll check which nodes are not covered by any specification
+        // or if the underlying node checksum has changed.
+        const coveredNodeIds = new Set<string>();
+        for (const spec of Object.values(specMap.specifications)) {
+            for (const nodeId of spec.node_ids) {
+                coveredNodeIds.add(nodeId);
+            }
+        }
+
+        const nodesToSpecialize = nodesWithSummaries.filter(n => {
+            const isNew = !coveredNodeIds.has(n.id);
+            const existingSpec = Object.values(specMap.specifications!).find(s => s.node_ids.includes(n.id));
+            const hasChanged = existingSpec && existingSpec.checksum !== n.checksum;
+            return isNew || hasChanged;
+        });
+
+        if (nodesToSpecialize.length > 0 && this.summarizer) {
+            const specProgress = new cliProgress.SingleBar({
+                format: 'Generating Specs | {bar} | {percentage}% | {value}/{total} Specifications',
+            }, cliProgress.Presets.shades_classic);
+
+            specProgress.start(nodesToSpecialize.length, 0);
+
+            // Group nodes for specialization (e.g., by file or just small batches)
+            const BATCH_SIZE = 10;
+            for (let i = 0; i < nodesToSpecialize.length; i += BATCH_SIZE) {
+                const batch = nodesToSpecialize.slice(i, i + BATCH_SIZE);
+                const items = batch.map(n => ({ id: n.id, summary: n.summary! }));
+                
+                try {
+                    const newSpecs = await this.summarizer.specialize(items);
+                    for (const spec of newSpecs) {
+                        // Use the first node's checksum as the requirement checksum for now
+                        // In a more robust implementation, we'd combine checksums of all linked nodes.
+                        const node = specMap.nodes[spec.node_ids[0]];
+                        specMap.specifications[spec.id] = {
+                            ...spec,
+                            checksum: node?.checksum || ''
+                        };
+                    }
+                } catch (err) {
+                    console.warn(`\nWarning: Specification generation failed: ${err}`);
+                    throw err; // Fail the generation as per RFC
+                }
+                specProgress.increment(batch.length);
+            }
+            specProgress.stop();
         }
 
         return specMap;
