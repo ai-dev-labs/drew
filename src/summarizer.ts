@@ -2,13 +2,17 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
+import { fromIni } from '@aws-sdk/credential-providers';
 import { generateText, generateObject } from 'ai';
 import { z } from 'zod';
 
 export interface SummarizerSettings {
-    provider: 'google' | 'openai' | 'anthropic' | 'mock';
+    provider: 'google' | 'bedrock' | 'openai' | 'anthropic' | 'mock';
     model: string;
-    apiKey: string;
+    apiKey?: string;
+    aws_profile?: string;
+    aws_region?: string;
 }
 
 export interface Summarizer {
@@ -24,21 +28,29 @@ export class AISummarizer implements Summarizer {
         this.settings = settings;
     }
 
+    private getModel() {
+        if (this.settings.provider === 'google') {
+            const google = createGoogleGenerativeAI({ apiKey: this.settings.apiKey! });
+            return google(this.settings.model);
+        }
+        if (this.settings.provider === 'bedrock') {
+            const bedrock = createAmazonBedrock({
+                region: this.settings.aws_region!,
+                credentialProvider: fromIni({ profile: this.settings.aws_profile! }),
+            });
+            return bedrock(this.settings.model);
+        }
+        throw new Error(`Provider ${this.settings.provider} is not yet implemented.`);
+    }
+
     async summarize(code: string): Promise<string> {
         if (this.settings.provider === 'mock') {
             return `Summary for: ${code.substring(0, 20)}...`;
         }
 
-        if (this.settings.provider !== 'google') {
-            throw new Error(`Provider ${this.settings.provider} is not yet implemented.`);
-        }
-
-        const google = createGoogleGenerativeAI({
-            apiKey: this.settings.apiKey
-        });
-
+        const model = this.getModel();
         const { text } = await generateText({
-            model: google(this.settings.model),
+            model,
             maxRetries: 5,
             prompt: `Summarize the following code symbol technically and concisely (1-3 sentences):\n\n${code}`
         });
@@ -57,16 +69,9 @@ export class AISummarizer implements Summarizer {
             return results;
         }
 
-        if (this.settings.provider !== 'google') {
-            throw new Error(`Provider ${this.settings.provider} is not yet implemented.`);
-        }
-
-        const google = createGoogleGenerativeAI({
-            apiKey: this.settings.apiKey
-        });
-
+        const model = this.getModel();
         const { object } = await generateObject({
-            model: google(this.settings.model),
+            model,
             schema: z.object({
                 summaries: z.array(z.object({
                     id: z.string(),
@@ -99,16 +104,9 @@ ${items.map(item => `ID: ${item.id}\nCODE:\n${item.code}\n---`).join('\n')}`
             }));
         }
 
-        if (this.settings.provider !== 'google') {
-            throw new Error(`Provider ${this.settings.provider} is not yet implemented.`);
-        }
-
-        const google = createGoogleGenerativeAI({
-            apiKey: this.settings.apiKey
-        });
-
+        const model = this.getModel();
         const { object } = await generateObject({
-            model: google(this.settings.model),
+            model,
             schema: z.object({
                 specifications: z.array(z.object({
                     id: z.string(),
@@ -137,9 +135,34 @@ export async function loadSettings(): Promise<SummarizerSettings> {
 
     try {
         const settings = await fs.readJson(settingsPath);
-        if (!settings.provider || !settings.apiKey) {
-            throw new Error('Invalid settings: provider and apiKey are required.');
+        if (!settings.provider) {
+            throw new Error('Invalid settings: provider is required.');
         }
+
+        if (settings.provider === 'bedrock') {
+            if (!settings.aws_profile || !settings.aws_region) {
+                throw new Error('Invalid settings: aws_profile and aws_region are required for bedrock provider.');
+            }
+            return {
+                provider: settings.provider,
+                model: settings.model || 'us.amazon.nova-lite-v1:0',
+                aws_profile: settings.aws_profile,
+                aws_region: settings.aws_region
+            };
+        }
+
+        if (settings.provider === 'google') {
+            if (!settings.apiKey) {
+                throw new Error('Invalid settings: apiKey is required for google provider.');
+            }
+            return {
+                provider: settings.provider,
+                model: settings.model || 'gemini-2.5-flash-lite',
+                apiKey: settings.apiKey
+            };
+        }
+
+        // mock and other providers
         return {
             provider: settings.provider,
             model: settings.model || 'gemini-2.5-flash-lite',
