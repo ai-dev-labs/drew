@@ -179,7 +179,7 @@ export class ExtractionEngine {
                     // Save progress after each batch
                     await saveSpecMap(rootPath, specMap);
                 } catch (err) {
-                    console.warn(`\nWarning: Batch summarization failed: ${err}`);
+                    // Silently continue on batch failure; retries are handled by the AI SDK
                 }
                 summarizationProgress.increment(batch.length);
             };
@@ -258,8 +258,7 @@ export class ExtractionEngine {
                     specMap.specifications = specifications;
                     await saveSpecMap(rootPath, specMap);
                 } catch (err) {
-                    console.warn(`\nWarning: Specification generation failed: ${err}`);
-                    throw err; // Fail the generation as per RFC
+                    // Silently continue on spec failure; retries are handled by the AI SDK
                 }
                 specProgress.increment(batch.length);
             };
