@@ -22,31 +22,39 @@ The project follows a three-layered architectural mapping:
 
 The following requirements are automatically extracted and maintained by the system:
 
+### Data Model
+-   **CodeGraphNode (REQ-CODEGRAPHNODE-1)**: The system SHALL represent code symbols with identifiable information, location details, and a content verification mechanism.
+-   **Requirement (REQ-REQUIREMENT-1)**: The system SHALL provide a structured representation for software requirements, including a unique ID, description, acceptance criteria, associated node IDs, and a checksum.
+-   **SpecMap (REQ-SPECMAP-1)**: The system SHALL maintain a comprehensive map of code analysis results, storing `CodeGraphNode` objects by their IDs and optionally `Requirement` objects.
+-   **LanguageConfig (REQ-LANGCONFIG-1)**: The system SHALL support configurable language parsing with a parser, symbol extraction query, and file extensions.
+
 ### Core Engine
--   **ExtractionEngine (REQ-EE-001)**: The system SHALL be responsible for parsing source code, extracting symbols, AI summarization, and formal specification generation.
--   **Multi-Language Support (REQ-EE-CON-001)**: When instantiated, the engine SHALL configure initial support for Rust and TypeScript.
--   **Directory Traversal (REQ-EE-WALK-001)**: The system SHALL recursively traverse directories while respecting `.drewignore` and skipping common directories like `node_modules`.
--   **File Extraction (S001_CODE_EXTRACTION)**: When a file is processed, the system SHALL extract symbols based on its language-specific configuration.
+-   **Initialization (REQ-CONSTRUCTOR-1)**: The ExtractionEngine SHALL be initialized with configured language support for Rust and TypeScript, defining specific queries and file extensions for each.
+-   **Config Lookup (REQ-GETCONFIGFORFILE-1)**: The system SHALL retrieve language configurations based on file extensions.
+-   **Directory Traversal (REQ-WALK-1)**: The system SHALL recursively traverse directories to identify supported files, respecting ignore rules and skipping common directories like `node_modules`.
+-   **Extraction (REQ-ENGINE-EXTRACT-001)**: The system SHALL extract code symbols from a given file based on its language configuration.
+-   **Checksum (REQ-ENGINE-CHECKSUM-001)**: The system SHALL compute a SHA-256 checksum for an array of code symbol IDs and their corresponding node checksums to detect changes in specifications.
+-   **Persistence (REQ-ENGINE-SAVEMAP-001)**: The system SHALL save the generated `SpecMap` to `.drew/spec-map.json` with pretty-printing, creating the `.drew` directory if needed.
 
 ### AI & Summarization
--   **AI Summarization (S005_AI_SUMMARIZATION_REQUIREMENTS)**: The system SHALL implement AI-driven generation of code summaries and formal EARS requirements.
--   **Batch Processing (REQ-EE-PB-001)**: The system SHALL asynchronously handle batches of code symbols to optimize AI interactions.
--   **Contextual Linking**: Each generated requirement SHALL be linked to its corresponding original code symbol IDs for traceability.
-
-### Data & Persistence
--   **SpecMap (REQ-SM-001)**: The system SHALL maintain a `SpecMap` to store `CodeGraphNode` objects and linked `Requirement` objects.
--   **Persistence (S002_SPECMAP_PERSISTENCE)**: The system SHALL save the generated mapping to `.drew/spec-map.json` with pretty-printing.
+-   **Summarizer Interface (REQ-SUMMARIZER-INTERFACE-001)**: The system SHALL provide an interface for generating technical summaries from code snippets and producing structured specifications, with methods for single summarization, batch summarization, and specialization.
+-   **Settings**: The `SummarizerSettings` SHALL define provider, model, and optional API keys or AWS credentials.
+-   **Model Selection**: The `getModel()` helper SHALL return a language model based on the provider settings (Google or Bedrock).
+-   **Batch Summarization**: The system SHALL summarize multiple code symbols in a batch using a language model.
+-   **Specification Generation**: The system SHALL generate high-level requirements and acceptance criteria for code symbols using a language model.
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js
-- An AI Provider API Key (Google Gemini recommended)
+- An AI provider: Google Gemini API key **or** AWS Bedrock access
 
 ### Setup
 1. Clone the repository.
 2. Install dependencies: `npm install`
 3. Configure your settings in `~/.drew/settings.json`:
+
+   **Google provider:**
    ```json
    {
      "provider": "google",
@@ -54,6 +62,17 @@ The following requirements are automatically extracted and maintained by the sys
      "apiKey": "YOUR_API_KEY"
    }
    ```
+
+   **AWS Bedrock provider:**
+   ```json
+   {
+     "provider": "bedrock",
+     "aws_profile": "your-profile",
+     "aws_region": "us-west-2"
+   }
+   ```
+   The default model is `us.amazon.nova-lite-v1:0`. Override with a `"model"` field if needed. Requires a valid AWS profile with `bedrock:InvokeModel` permissions.
+
 4. Build the project: `npm run build`
 
 ## Usage
