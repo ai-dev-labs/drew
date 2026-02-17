@@ -4,6 +4,7 @@ import * as fs from 'fs';
 export interface EmbeddingProvider {
     initialize(): Promise<void>;
     embed(text: string): Promise<number[]>;
+    embedBatch?(texts: string[]): Promise<number[][]>;
     readonly dimension: number;
 }
 
@@ -49,6 +50,10 @@ export class SimpleEmbeddingProvider implements EmbeddingProvider {
         }
 
         return vector;
+    }
+
+    async embedBatch(texts: string[]): Promise<number[][]> {
+        return Promise.all(texts.map(t => this.embed(t)));
     }
 
     /** FNV-1a hash */
@@ -169,6 +174,49 @@ export class TensorFlowEmbeddingProvider implements EmbeddingProvider {
         embeddings.dispose();
 
         return Array.from(data as Float32Array);
+    }
+
+    async embedBatch(texts: string[]): Promise<number[][]> {
+        if (texts.length === 0) return [];
+        if (!this.graphModel || !this.tokenizer) {
+            await this.initialize();
+        }
+
+        // Tokenize all texts and build batched index/value tensors
+        const encodings: number[][] = texts.map(t => this.tokenizer.encode(t));
+
+        const allIndices: number[][] = [];
+        const allValues: number[] = [];
+        for (let batchIdx = 0; batchIdx < encodings.length; batchIdx++) {
+            const encoding = encodings[batchIdx];
+            for (let pos = 0; pos < encoding.length; pos++) {
+                allIndices.push([batchIdx, pos]);
+                allValues.push(encoding[pos]);
+            }
+        }
+
+        const indicesTensor = this.tf.tensor2d(allIndices, [allIndices.length, 2], 'int32');
+        const valuesTensor = this.tf.tensor1d(allValues, 'int32');
+
+        const embeddings = await this.graphModel.executeAsync({
+            indices: indicesTensor,
+            values: valuesTensor,
+        });
+
+        const data = await embeddings.data();
+        indicesTensor.dispose();
+        valuesTensor.dispose();
+        embeddings.dispose();
+
+        // Split the flat output into per-item vectors of size this.dimension
+        const results: number[][] = [];
+        const floatData = data as Float32Array;
+        for (let i = 0; i < texts.length; i++) {
+            const start = i * this.dimension;
+            results.push(Array.from(floatData.slice(start, start + this.dimension)));
+        }
+
+        return results;
     }
 }
 
