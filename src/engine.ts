@@ -231,7 +231,6 @@ export class ExtractionEngine {
         const nodesToSpecialize = nodesWithSummaries.filter(n => !validCoveredNodeIds.has(n.id));
 
         if (nodesToSpecialize.length > 0 && this.summarizer) {
-            console.log(`\nGenerating specifications for ${nodesToSpecialize.length} uncovered/changed nodes...`);
             const specProgress = new cliProgress.SingleBar({
                 format: 'Generating Specs | {bar} | {percentage}% | {value}/{total} Nodes',
             }, cliProgress.Presets.shades_classic);

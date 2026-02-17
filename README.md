@@ -1,60 +1,49 @@
 # drew
 
-**drew** is a Code-Graph & Specification Engine designed to bridge the gap between source code and natural language requirements. It extracts a high-fidelity graph of code symbols, generates technical summaries, and derives formal specifications, enabling both AI agents and humans to navigate codebases with precision.
+**drew** is a Code-Graph & Specification Engine that extracts code symbols, generates AI-powered summaries, and derives formal EARS specifications — with built-in semantic vector search for AI agent code exploration.
 
 ## Architecture
 
-The project follows a three-layered architectural mapping:
+Three-layered mapping:
 
-1.  **Intent**: The high-level purpose and user-facing goals of the system.
-2.  **Specification**: Formal requirements and acceptance criteria in **EARS** (Easy Approach to Requirements Syntax) format, derived from the implementation.
-3.  **Code-Graph**: A detailed map of code symbols (functions, classes, traits, etc.) extracted via Tree-sitter and enriched with AI-generated technical summaries.
+1. **Intent** — High-level purpose and user-facing goals.
+2. **Specification** — Formal EARS requirements and acceptance criteria derived from code.
+3. **Code-Graph** — Extracted symbols (functions, classes, traits, etc.) enriched with AI summaries.
 
-## Core Features
+## Features
 
--   **Multi-Language Extraction**: Built-in support for **Rust** and **TypeScript/TSX** using Tree-sitter.
--   **AI-Driven Summarization**: Automatically generates concise, technical summaries for every extracted symbol.
--   **Automated Specification Layer**: Transforms code summaries into formal requirements and acceptance criteria.
--   **Incremental Generation**: Uses checksum-based tracking to update only what has changed, minimizing LLM overhead.
--   **Traceability**: Maintains bi-directional links between high-level requirements and the underlying code nodes.
-
-## System Specifications (EARS)
-
-The following requirements are automatically extracted and maintained by the system:
-
-### Data Model
--   **CodeGraphNode (REQ-CODEGRAPHNODE-1)**: The system SHALL represent code symbols with identifiable information, location details, and a content verification mechanism.
--   **Requirement (REQ-REQUIREMENT-1)**: The system SHALL provide a structured representation for software requirements, including a unique ID, description, acceptance criteria, associated node IDs, and a checksum.
--   **SpecMap (REQ-SPECMAP-1)**: The system SHALL maintain a comprehensive map of code analysis results, storing `CodeGraphNode` objects by their IDs and optionally `Requirement` objects.
--   **LanguageConfig (REQ-LANGCONFIG-1)**: The system SHALL support configurable language parsing with a parser, symbol extraction query, and file extensions.
-
-### Core Engine
--   **Initialization (REQ-CONSTRUCTOR-1)**: The ExtractionEngine SHALL be initialized with configured language support for Rust and TypeScript, defining specific queries and file extensions for each.
--   **Config Lookup (REQ-GETCONFIGFORFILE-1)**: The system SHALL retrieve language configurations based on file extensions.
--   **Directory Traversal (REQ-WALK-1)**: The system SHALL recursively traverse directories to identify supported files, respecting ignore rules and skipping common directories like `node_modules`.
--   **Extraction (REQ-ENGINE-EXTRACT-001)**: The system SHALL extract code symbols from a given file based on its language configuration.
--   **Checksum (REQ-ENGINE-CHECKSUM-001)**: The system SHALL compute a SHA-256 checksum for an array of code symbol IDs and their corresponding node checksums to detect changes in specifications.
--   **Persistence (REQ-ENGINE-SAVEMAP-001)**: The system SHALL save the generated `SpecMap` to `.drew/spec-map.json` with pretty-printing, creating the `.drew` directory if needed.
-
-### AI & Summarization
--   **Summarizer Interface (REQ-SUMMARIZER-INTERFACE-001)**: The system SHALL provide an interface for generating technical summaries from code snippets and producing structured specifications, with methods for single summarization, batch summarization, and specialization.
--   **Settings**: The `SummarizerSettings` SHALL define provider, model, and optional API keys or AWS credentials.
--   **Model Selection**: The `getModel()` helper SHALL return a language model based on the provider settings (Google or Bedrock).
--   **Batch Summarization**: The system SHALL summarize multiple code symbols in a batch using a language model.
--   **Specification Generation**: The system SHALL generate high-level requirements and acceptance criteria for code symbols using a language model.
+- **Multi-Language Extraction** — Rust and TypeScript/TSX via Tree-sitter.
+- **AI Summarization** — Technical summaries for every symbol via Google Gemini or AWS Bedrock.
+- **Specification Generation** — EARS requirements with acceptance criteria, linked to code nodes.
+- **Incremental Processing** — Checksum-based change detection; only re-processes what changed.
+- **Semantic Vector Search** — Natural language search over code and specs using [zvec](https://github.com/alibaba/zvec) + TensorFlow.js Universal Sentence Encoder.
+- **Agent Instructions** — Built-in `drew instructions` command outputs a guide for AI agents.
 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js
 - An AI provider: Google Gemini API key **or** AWS Bedrock access
 
 ### Setup
-1. Clone the repository.
-2. Install dependencies: `npm install`
-3. Configure your settings in `~/.drew/settings.json`:
 
-   **Google provider:**
+1. Clone the repository.
+2. Install dependencies: `npm install --legacy-peer-deps`
+3. Configure `~/.drew/settings.json`:
+
+   **AWS Bedrock:**
+   ```json
+   {
+     "provider": "bedrock",
+     "model": "us.amazon.nova-lite-v1:0",
+     "aws_profile": "your-profile",
+     "aws_region": "us-west-2"
+   }
+   ```
+   Requires a valid AWS profile with `bedrock:InvokeModel` permissions. The default model is `us.amazon.nova-lite-v1:0`.
+
+   **Google Gemini:**
    ```json
    {
      "provider": "google",
@@ -63,24 +52,148 @@ The following requirements are automatically extracted and maintained by the sys
    }
    ```
 
-   **AWS Bedrock provider:**
-   ```json
-   {
-     "provider": "bedrock",
-     "aws_profile": "your-profile",
-     "aws_region": "us-west-2"
-   }
-   ```
-   The default model is `us.amazon.nova-lite-v1:0`. Override with a `"model"` field if needed. Requires a valid AWS profile with `bedrock:InvokeModel` permissions.
-
-4. Build the project: `npm run build`
+4. Build: `npm run build`
 
 ## Usage
 
-To extract the code graph and specifications for a project:
+### Extract
 
 ```bash
 drew extract <project-directory>
 ```
 
-The results will be stored in `<project-directory>/.drew/spec-map.json`.
+Extracts code symbols, generates summaries, and derives EARS specifications. Results are stored in `<project-directory>/.drew/spec-map.json`.
+
+### Index
+
+Build the vector search index from the extracted spec-map:
+
+```bash
+drew index [path]           # Index (or update) the vector store
+drew index --reindex        # Destroy and fully rebuild the index
+```
+
+The index is stored at `.drew/.data/` and is rebuildable at any time.
+
+### Search
+
+Semantic search over code nodes and specifications:
+
+```bash
+drew search "error handling"              # Default limit of 10
+drew search "authentication" --limit 5    # Limit results
+drew search "parsing" --type spec         # Only specifications
+drew search "tree-sitter" --type node     # Only code symbols
+drew search "extract" --json              # Machine-readable JSON output
+```
+
+Results are ranked by relevance (highest score first). Specification results include their linked code nodes.
+
+### Get
+
+Retrieve a document by its exact ID:
+
+```bash
+drew get "src/engine.ts:extractAll"       # Get a code node
+drew get "REQ-EXTRACTALL-1"              # Get a spec + linked code nodes
+drew get "REQ-EXTRACTALL-1" --json       # JSON output
+```
+
+### Delete
+
+Remove a document from the index:
+
+```bash
+drew delete "src/engine.ts:extractAll"
+```
+
+### Instructions
+
+Output AI agent instructions for using drew to explore code:
+
+```bash
+drew instructions
+```
+
+This prints a structured guide that teaches an AI agent how to use drew's search and retrieval commands before writing or modifying code.
+
+## Example: End-to-End with Bedrock
+
+```bash
+# 1. Configure Bedrock
+cat > ~/.drew/settings.json << 'EOF'
+{
+  "provider": "bedrock",
+  "aws_profile": "herdapp",
+  "aws_region": "us-west-2"
+}
+EOF
+
+# 2. Extract symbols and generate specs
+drew extract ./my-project
+
+# 3. Build the vector index
+drew index ./my-project
+
+# 4. Search for relevant code
+drew search "user authentication"
+
+# 5. Get full details on a result
+drew get "src/auth.ts:validateToken"
+
+# 6. Search for related specs
+drew search "authentication" --type spec
+```
+
+## Integrating with Kiro AgentSpawn Hooks
+
+Use `drew instructions` to inject code exploration context into AI agent sessions via Kiro's AgentSpawn hooks. This ensures agents always explore the codebase with drew before writing code.
+
+### Setup
+
+Add a hook to your `.kiro/hooks/agent_spawn.md` (or the appropriate hook configuration file):
+
+```markdown
+# Agent Spawn Hook
+
+## Code Exploration with Drew
+
+Before starting any coding task, the agent must understand the codebase using drew.
+
+### Instructions
+
+Run the following command and follow the instructions it outputs:
+
+\`\`\`bash
+drew instructions
+\`\`\`
+
+### Required Workflow
+
+1. Run `drew instructions` and read the output.
+2. Use `drew search` to find code and specs relevant to the task.
+3. Use `drew get` to retrieve full details on relevant results.
+4. Only after exploration, proceed with implementation.
+
+### Pre-conditions
+
+- The project must have been extracted: `drew extract .`
+- The vector index must exist: `drew index`
+
+If either is missing, run those commands first.
+```
+
+This hook fires whenever a new agent session starts, ensuring every agent begins by exploring relevant code through drew's semantic search rather than guessing at file locations or function signatures.
+
+## Data Storage
+
+```
+.drew/
+├── spec-map.json        # Extracted nodes + specifications (source of truth)
+├── .data/               # zvec vector index (derived, rebuildable)
+└── specs/               # RFC/spec markdown files
+```
+
+- `spec-map.json` is the primary artifact and should be committed to source control.
+- `.drew/.data/` is a derived index — rebuildable via `drew index --reindex`.
+- The `models/` directory contains the TensorFlow.js Universal Sentence Encoder model files (~27MB) used for local embeddings.
