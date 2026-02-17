@@ -43,6 +43,22 @@ Three-layered mapping:
    ```
    Requires a valid AWS profile with `bedrock:InvokeModel` permissions. The default model is `us.amazon.nova-lite-v1:0`.
 
+   **Optional settings:**
+
+   | Key | Type | Default | Description |
+   |-----|------|---------|-------------|
+   | `indexing_concurrency` | `number` | `20` | Number of parallel workers used during `drew index`. Increase on machines with more resources. |
+
+   Example with concurrency tuning:
+   ```json
+   {
+     "provider": "bedrock",
+     "aws_profile": "your-profile",
+     "aws_region": "us-west-2",
+     "indexing_concurrency": 50
+   }
+   ```
+
    **Google Gemini:**
    ```json
    {

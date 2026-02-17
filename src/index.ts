@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { ExtractionEngine, saveSpecMap, CodeGraphNode, Requirement } from './engine';
 import { DrewVectorStore, SearchResult } from './vectorstore';
 import { createEmbeddingProvider } from './embeddings';
+import { loadSettings } from './summarizer';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 
@@ -71,12 +72,20 @@ program
         }
 
         try {
+            let indexingConcurrency: number | undefined;
+            try {
+                const settings = await loadSettings();
+                indexingConcurrency = settings.indexing_concurrency;
+            } catch {
+                // Settings may not exist for indexing-only use
+            }
+
             const specMap = await fs.readJson(specMapPath);
             const embedder = await createEmbeddingProvider();
             const store = new DrewVectorStore(absolutePath, embedder);
 
             await store.create(!!options.reindex);
-            const result = await store.indexAll(specMap);
+            const result = await store.indexAll(specMap, indexingConcurrency);
             store.close();
 
             console.log(`Indexed ${result.nodes} nodes and ${result.specs} specifications`);
