@@ -4,3 +4,4 @@ dist/
 *.log
 .drew/.data/
 models/
+.worktrees/
