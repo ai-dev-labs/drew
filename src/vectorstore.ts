@@ -26,6 +26,30 @@ export interface SearchResult {
     linkedNodes?: CodeGraphNode[];
 }
 
+export interface IndexResult {
+    nodes: number;
+    specs: number;
+    added: number;
+    updated: number;
+    removed: number;
+    unchanged: number;
+}
+
+interface IndexableItem {
+    text: string;
+    id: string;
+    fields: Record<string, string>;
+    checksum: string;
+}
+
+interface IndexDiff {
+    toEmbed: IndexableItem[];
+    toDelete: string[];
+    unchanged: number;
+    added: number;
+    updated: number;
+}
+
 function nodeSearchableText(node: CodeGraphNode): string {
     const parts = [`${node.name} (${node.kind}) in ${node.path}`];
     if (node.summary) parts.push(node.summary);
@@ -114,8 +138,15 @@ export class DrewVectorStore {
     async create(reindex: boolean): Promise<void> {
         ZVecInitialize({ logLevel: 3 }); // ERROR only
 
-        if (reindex && await fs.pathExists(this.collectionPath)) {
-            await fs.remove(this.collectionPath);
+        if (reindex) {
+            if (await fs.pathExists(this.collectionPath)) {
+                await fs.remove(this.collectionPath);
+            }
+            // Also remove the indexed IDs sidecar file for a clean rebuild
+            const idsPath = this.indexedIdsPath();
+            if (await fs.pathExists(idsPath)) {
+                await fs.remove(idsPath);
+            }
         }
 
         if (await fs.pathExists(this.collectionPath)) {
@@ -136,7 +167,7 @@ export class DrewVectorStore {
         return true;
     }
 
-    async indexAll(specMap: SpecMap, concurrency?: number): Promise<{ nodes: number; specs: number }> {
+    async indexAll(specMap: SpecMap, concurrency?: number): Promise<IndexResult> {
         if (!this.collection) throw new Error('Collection not open');
 
         const nodes = Object.values(specMap.nodes);
@@ -144,16 +175,12 @@ export class DrewVectorStore {
         const total = nodes.length + specs.length;
 
         if (total === 0) {
-            return { nodes: 0, specs: 0 };
+            this.saveIndexedIds(new Set());
+            return { nodes: 0, specs: 0, added: 0, updated: 0, removed: 0, unchanged: 0 };
         }
 
-        const progress = new cliProgress.SingleBar({
-            format: 'Indexing | {bar} | {percentage}% | {value}/{total} Documents',
-        }, cliProgress.Presets.shades_classic);
-        progress.start(total, 0);
-
-        // Prepare items with their text and field builders
-        const items: { text: string; id: string; fields: Record<string, string> }[] = [];
+        // Prepare items with their text, fields, and checksum
+        const items: IndexableItem[] = [];
 
         for (const node of nodes) {
             items.push({
@@ -168,6 +195,7 @@ export class DrewVectorStore {
                     kind: node.kind,
                     node_ids: '',
                 },
+                checksum: node.checksum,
             });
         }
 
@@ -184,25 +212,46 @@ export class DrewVectorStore {
                     kind: '',
                     node_ids: JSON.stringify(spec.node_ids),
                 },
+                checksum: spec.checksum,
             });
         }
 
-        // ── Phase 1: Batch Embedding ──
-        const batchSize = determineBatchSize(items.length);
-        const embedded: { item: typeof items[0]; embedding: number[] }[] = [];
+        // ── Incremental Diff ──
+        const diff = this.diffItems(items);
+        const workItems = diff.toEmbed.length + diff.toDelete.length;
 
-        for (let i = 0; i < items.length; i += batchSize) {
-            const batch = items.slice(i, i + batchSize);
+        if (workItems === 0) {
+            // Save current IDs (no changes, but keep sidecar in sync)
+            this.saveIndexedIds(new Set(items.map(i => i.id)));
+            return {
+                nodes: nodes.length,
+                specs: specs.length,
+                added: 0,
+                updated: 0,
+                removed: 0,
+                unchanged: diff.unchanged,
+            };
+        }
+
+        const progress = new cliProgress.SingleBar({
+            format: 'Indexing | {bar} | {percentage}% | {value}/{total} Documents',
+        }, cliProgress.Presets.shades_classic);
+        progress.start(workItems, 0);
+
+        // ── Phase 1: Batch Embedding (only changed/new items) ──
+        const batchSize = determineBatchSize(diff.toEmbed.length);
+        const embedded: { item: IndexableItem; embedding: number[] }[] = [];
+
+        for (let i = 0; i < diff.toEmbed.length; i += batchSize) {
+            const batch = diff.toEmbed.slice(i, i + batchSize);
             const texts = batch.map(b => b.text);
 
             let embeddings: number[][];
             if (this.embedder.embedBatch) {
-                // Use batch inference — single forward pass for the entire batch
                 let currentBatchSize = texts.length;
                 while (true) {
                     try {
                         embeddings = await this.embedder.embedBatch(texts.slice(0, currentBatchSize));
-                        // If batch was split due to OOM retry, process remainder
                         if (currentBatchSize < texts.length) {
                             const rest = await this.embedBatchWithRetry(
                                 texts.slice(currentBatchSize),
@@ -212,13 +261,11 @@ export class DrewVectorStore {
                         }
                         break;
                     } catch (err: any) {
-                        // OOM or tensor error — halve batch size and retry
                         if (currentBatchSize <= 16) throw err;
                         currentBatchSize = Math.max(16, Math.floor(currentBatchSize / 2));
                     }
                 }
             } else {
-                // Fallback: sequential embed for providers without batch support
                 embeddings = await Promise.all(texts.map(t => this.embedder.embed(t)));
             }
 
@@ -228,20 +275,15 @@ export class DrewVectorStore {
             progress.increment(batch.length);
         }
 
-        // ── Phase 2: Worker Thread Upserts ──
-        // Close our collection handle so workers can acquire the lock
+        // ── Phase 2: Worker Thread Upserts (only changed/new items) ──
         this.collection.closeSync();
         this.collection = null;
 
-        // zvec only supports a single write handle, so use 1 worker thread.
-        // The goal is to unblock the main event loop, not parallelize writes.
         const upsertSuccess = await this.upsertViaWorkers(embedded, 1);
 
-        // Reopen collection for optimize and subsequent operations
         this.collection = ZVecOpen(this.collectionPath);
 
         if (!upsertSuccess) {
-            // Fallback: main-thread upserts if workers failed
             for (const { item, embedding } of embedded) {
                 this.collection.upsertSync({
                     id: item.id,
@@ -251,11 +293,112 @@ export class DrewVectorStore {
             }
         }
 
+        // ── Phase 3: Delete stale entries ──
+        for (const staleId of diff.toDelete) {
+            try {
+                this.collection.deleteSync(staleId);
+            } catch {
+                // Non-fatal: skip entries that can't be deleted
+            }
+            progress.increment(1);
+        }
+
         progress.stop();
 
         this.collection.optimizeSync();
 
-        return { nodes: nodes.length, specs: specs.length };
+        // Save current set of indexed IDs
+        this.saveIndexedIds(new Set(items.map(i => i.id)));
+
+        return {
+            nodes: nodes.length,
+            specs: specs.length,
+            added: diff.added,
+            updated: diff.updated,
+            removed: diff.toDelete.length,
+            unchanged: diff.unchanged,
+        };
+    }
+
+    private indexedIdsPath(): string {
+        return path.join(this.rootPath, '.drew', '.index-ids.json');
+    }
+
+    private loadIndexedIds(): Set<string> {
+        const p = this.indexedIdsPath();
+        try {
+            if (fs.pathExistsSync(p)) {
+                return new Set(fs.readJsonSync(p) as string[]);
+            }
+        } catch {
+            // Corrupt or unreadable — treat as first run
+        }
+        return new Set();
+    }
+
+    private saveIndexedIds(ids: Set<string>): void {
+        try {
+            fs.writeJsonSync(this.indexedIdsPath(), [...ids]);
+        } catch {
+            // Non-fatal: stale detection will be skipped on next run
+        }
+    }
+
+    private diffItems(items: IndexableItem[]): IndexDiff {
+        const previousIds = this.loadIndexedIds();
+        const currentIds = new Set(items.map(i => i.id));
+
+        // Batch fetch all current IDs from zvec
+        const encodedIds = items.map(i => i.id);
+        let existing: Record<string, any> = {};
+        try {
+            existing = this.collection.fetchSync(encodedIds);
+        } catch {
+            // fetchSync failed — fall back to full re-index (treat all as new)
+            return {
+                toEmbed: items,
+                toDelete: [],
+                unchanged: 0,
+                added: items.length,
+                updated: 0,
+            };
+        }
+
+        const toEmbed: IndexableItem[] = [];
+        let unchanged = 0;
+        let added = 0;
+        let updated = 0;
+
+        for (const item of items) {
+            const doc = existing[item.id];
+            if (!doc) {
+                toEmbed.push(item);
+                added++;
+            } else {
+                try {
+                    const stored = JSON.parse(doc.fields.content);
+                    if (stored.checksum === item.checksum) {
+                        unchanged++;
+                    } else {
+                        toEmbed.push(item);
+                        updated++;
+                    }
+                } catch {
+                    toEmbed.push(item);
+                    updated++;
+                }
+            }
+        }
+
+        // Stale detection: IDs in previous index but not in current items
+        const toDelete: string[] = [];
+        for (const prevId of previousIds) {
+            if (!currentIds.has(prevId)) {
+                toDelete.push(prevId);
+            }
+        }
+
+        return { toEmbed, toDelete, unchanged, added, updated };
     }
 
     /** Recursively embed with OOM retry, halving batch size on failure */
@@ -377,7 +520,7 @@ export class DrewVectorStore {
             fieldName: 'embedding',
             vector: embedding,
             topk: limit,
-            outputFields: ['type', 'name', 'content', 'path', 'kind', 'node_ids'],
+            outputFields: ['type', 'original_id', 'name', 'content', 'path', 'kind', 'node_ids'],
         };
 
         if (typeFilter) {

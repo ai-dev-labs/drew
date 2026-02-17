@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { ExtractionEngine, saveSpecMap, CodeGraphNode, Requirement } from './engine';
-import { DrewVectorStore, SearchResult } from './vectorstore';
+import { DrewVectorStore, SearchResult, IndexResult } from './vectorstore';
 import { MultiRepoResolver, MultiRepoSearchResult, MultiRepoGetResult } from './multi-repo';
 import { createEmbeddingProvider } from './embeddings';
 import { loadSettings } from './summarizer';
@@ -100,7 +100,7 @@ program
                         const result = await store.indexAll(specMap, indexingConcurrency);
                         store.close();
 
-                        console.log(`[${repo.name}] Indexed ${result.nodes} nodes and ${result.specs} specifications`);
+                        console.log(`[${repo.name}] Indexed ${result.nodes + result.specs} items (${result.added} added, ${result.updated} updated, ${result.removed} removed, ${result.unchanged} unchanged)`);
                     } catch (err: any) {
                         console.error(`Warning: Could not index '${repo.name}': ${err.message}`);
                     }
@@ -136,7 +136,7 @@ program
             const result = await store.indexAll(specMap, indexingConcurrency);
             store.close();
 
-            console.log(`Indexed ${result.nodes} nodes and ${result.specs} specifications`);
+            console.log(`Indexed ${result.nodes + result.specs} items (${result.added} added, ${result.updated} updated, ${result.removed} removed, ${result.unchanged} unchanged)`);
         } catch (err: any) {
             console.error(`Error: ${err.message}`);
             process.exit(1);
