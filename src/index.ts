@@ -150,29 +150,17 @@ program
     .option('--limit <n>', 'Maximum results to return', '10')
     .option('--json', 'Output as JSON')
     .option('--type <type>', 'Filter by type: node or spec')
-    .option('--all', 'Search all sibling repositories')
-    .option('--repo <name>', 'Search a specific sibling repository')
+    .option('--repo <name>', 'Search a specific repository')
     .action(async (query, options) => {
-        if (options.all && options.repo) {
-            console.error('Error: --all and --repo cannot be used together');
-            process.exit(1);
-        }
-
         const absolutePath = path.resolve('.');
         const limit = parseInt(options.limit, 10) || 10;
         const typeFilter = options.type as 'node' | 'spec' | undefined;
 
-        if (options.all || options.repo) {
-            try {
-                const resolver = new MultiRepoResolver(absolutePath);
-                const { opened, failed } = await resolver.openAll();
+        try {
+            const resolver = new MultiRepoResolver(absolutePath);
+            const { opened, failed } = await resolver.openAll();
 
-                if (opened.length === 0) {
-                    console.error('Error: No repositories could be opened.');
-                    resolver.closeAll();
-                    process.exit(1);
-                }
-
+            if (opened.length > 0) {
                 for (const name of failed) {
                     console.error(`Warning: Could not open index for '${name}'`);
                 }
@@ -198,13 +186,15 @@ program
                 } else {
                     printPrettyMultiRepoResults(query, results);
                 }
-            } catch (err: any) {
-                console.error(`Error: ${err.message}`);
-                process.exit(1);
+                return;
             }
-            return;
+
+            resolver.closeAll();
+        } catch {
+            // Multi-repo discovery failed, fall through to single-repo search
         }
 
+        // Fall back to single-repo search (cwd has its own index)
         try {
             const embedder = await createEmbeddingProvider();
             const store = new DrewVectorStore(absolutePath, embedder);

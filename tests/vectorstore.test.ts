@@ -373,15 +373,149 @@ describe('DrewVectorStore - incremental indexing', function () {
     });
 });
 
+describe('DrewVectorStore - pipelined embedding + batch upsert', function () {
+    this.timeout(15000);
+
+    let tempDir: string;
+    let store: DrewVectorStore;
+    let embedder: SimpleEmbeddingProvider;
+
+    beforeEach(async () => {
+        tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'drew-pipe-test-'));
+        await fs.ensureDir(path.join(tempDir, '.drew'));
+        embedder = new SimpleEmbeddingProvider();
+        await embedder.initialize();
+        store = new DrewVectorStore(tempDir, embedder);
+        await store.create(true);
+    });
+
+    afterEach(async () => {
+        store.close();
+        await fs.remove(tempDir);
+    });
+
+    it('PIT-1: pipelined index produces correct results for 50 items', async () => {
+        const specMap = buildSpecMap(40, 10);
+        await fs.writeJson(path.join(tempDir, '.drew', 'spec-map.json'), specMap);
+        const result = await store.indexAll(specMap);
+
+        expect(result.nodes).to.equal(40);
+        expect(result.specs).to.equal(10);
+        expect(result.added).to.equal(50);
+        expect(result.updated).to.equal(0);
+        expect(result.removed).to.equal(0);
+        expect(result.unchanged).to.equal(0);
+
+        // Verify all items are searchable
+        const nodeResults = await store.search('function processes data', 50);
+        expect(nodeResults.length).to.be.greaterThan(0);
+
+        const specResults = await store.search('requirement for testing', 50, 'spec');
+        expect(specResults.length).to.be.greaterThan(0);
+    });
+
+    it('PIT-2: pipelined index matches serial index search results', async () => {
+        const specMap = buildSpecMap(20);
+        await fs.writeJson(path.join(tempDir, '.drew', 'spec-map.json'), specMap);
+        const result = await store.indexAll(specMap);
+
+        expect(result.added).to.equal(20);
+
+        // Verify each item is retrievable by its original ID
+        for (let i = 0; i < 20; i++) {
+            const fetched = await store.get(`src/file${i}.ts:func${i}`);
+            expect(fetched, `func${i} should be retrievable`).to.not.be.null;
+            expect(fetched!.type).to.equal('node');
+            expect((fetched!.data as CodeGraphNode).name).to.equal(`func${i}`);
+        }
+    });
+
+    it('PIT-3: incremental pipeline re-embeds only changed items', async () => {
+        const specMap = buildSpecMap(50);
+        await store.indexAll(specMap);
+
+        store.close();
+        store = new DrewVectorStore(tempDir, embedder);
+        await store.create(false);
+
+        // Modify 5 items
+        for (let i = 0; i < 5; i++) {
+            specMap.nodes[`src/file${i}.ts:func${i}`].checksum = `changed-${i}`;
+            specMap.nodes[`src/file${i}.ts:func${i}`].summary = `Updated function ${i} with new behavior`;
+        }
+
+        const result = await store.indexAll(specMap);
+        expect(result.updated).to.equal(5);
+        expect(result.unchanged).to.equal(45);
+        expect(result.added).to.equal(0);
+        expect(result.removed).to.equal(0);
+
+        // Verify updated items have correct content
+        const fetched = await store.get('src/file0.ts:func0');
+        expect(fetched).to.not.be.null;
+        expect((fetched!.data as CodeGraphNode).summary).to.equal('Updated function 0 with new behavior');
+    });
+
+    it('PIT-4: large batch pipeline indexes 500+ items correctly', async () => {
+        const specMap = buildSpecMap(400, 100);
+        const result = await store.indexAll(specMap);
+
+        expect(result.nodes).to.equal(400);
+        expect(result.specs).to.equal(100);
+        expect(result.added).to.equal(500);
+
+        // Spot-check some items are retrievable
+        const fetched0 = await store.get('src/file0.ts:func0');
+        expect(fetched0).to.not.be.null;
+
+        const fetched399 = await store.get('src/file399.ts:func399');
+        expect(fetched399).to.not.be.null;
+
+        const fetchedSpec = await store.get('REQ-TEST-50');
+        expect(fetchedSpec).to.not.be.null;
+        expect(fetchedSpec!.type).to.equal('spec');
+    });
+
+    it('PIT-5: pipeline with non-batch embedder still indexes correctly', async () => {
+        const minimalEmbedder: EmbeddingProvider = {
+            dimension: 512,
+            async initialize() {},
+            async embed(text: string) {
+                const vec = new Array(512).fill(0);
+                for (let i = 0; i < Math.min(text.length, 512); i++) {
+                    vec[i] = text.charCodeAt(i) / 255;
+                }
+                return vec;
+            },
+        };
+
+        store.close();
+        await fs.remove(path.join(tempDir, '.drew', '.data'));
+        const noBatchStore = new DrewVectorStore(tempDir, minimalEmbedder);
+        await noBatchStore.create(true);
+
+        const specMap = buildSpecMap(30);
+        const result = await noBatchStore.indexAll(specMap);
+        expect(result.nodes).to.equal(30);
+        expect(result.added).to.equal(30);
+
+        // Verify searchable
+        const results = await noBatchStore.search('function processes data', 5);
+        expect(results.length).to.be.greaterThan(0);
+
+        noBatchStore.close();
+    });
+});
+
 describe('determineBatchSize', () => {
     // We'll import the function once it's implemented.
     // For now these tests describe the expected behavior.
 
-    it('should clamp batch size to minimum of 16', async () => {
-        // With very low free memory, batch size should not go below 16
+    it('should clamp batch size to minimum of 100', async () => {
+        // With very low memory, batch size should not go below 100
         const { determineBatchSize } = require('../src/vectorstore');
-        const result = determineBatchSize(1000, 1 * 1024 * 1024); // 1MB free
-        expect(result).to.be.at.least(16);
+        const result = determineBatchSize(1000, 1 * 1024 * 1024); // 1MB
+        expect(result).to.be.at.least(100);
     });
 
     it('should clamp batch size to maximum of 128', async () => {
@@ -396,10 +530,10 @@ describe('determineBatchSize', () => {
         expect(result).to.be.at.most(5);
     });
 
-    it('should use 30% of free memory at ~2MB per item', async () => {
+    it('should use 30% of memory at ~2MB per item, clamped to min 100', async () => {
         const { determineBatchSize } = require('../src/vectorstore');
-        // 200MB free → 30% = 60MB → 60/2 = 30 items
+        // 200MB → 30% = 60MB → 60/2 = 30 → clamped to min 100
         const result = determineBatchSize(1000, 200 * 1024 * 1024);
-        expect(result).to.equal(30);
+        expect(result).to.equal(100);
     });
 });
