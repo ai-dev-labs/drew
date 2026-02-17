@@ -1,5 +1,122 @@
 {
   "nodes": {
+    "src/embeddings.ts:EmbeddingProvider": {
+      "id": "src/embeddings.ts:EmbeddingProvider",
+      "kind": "interface_declaration",
+      "name": "EmbeddingProvider",
+      "namespace": [],
+      "path": "src/embeddings.ts",
+      "start_byte": 64,
+      "end_byte": 204,
+      "start_line": 3,
+      "end_line": 7,
+      "checksum": "bbfed6901bf89334e1634b09e08765c01f2ead80331e579219e042913b982cd6",
+      "summary": "Interface defining an embedding provider with initialize, embed, and dimension properties."
+    },
+    "src/embeddings.ts:SimpleEmbeddingProvider": {
+      "id": "src/embeddings.ts:SimpleEmbeddingProvider",
+      "kind": "class_declaration",
+      "name": "SimpleEmbeddingProvider",
+      "namespace": [],
+      "path": "src/embeddings.ts",
+      "start_byte": 399,
+      "end_byte": 2091,
+      "start_line": 14,
+      "end_line": 62,
+      "checksum": "11e221d36b18715ed6492d0a861d5a054f1b39fb2e50b2bf0e2518d95079d3ad",
+      "summary": "Class implementing EmbeddingProvider with basic n-gram based text embedding."
+    },
+    "src/embeddings.ts:initialize": {
+      "id": "src/embeddings.ts:initialize",
+      "kind": "method_definition",
+      "name": "initialize",
+      "namespace": [],
+      "path": "src/embeddings.ts",
+      "start_byte": 2670,
+      "end_byte": 4039,
+      "start_line": 80,
+      "end_line": 115,
+      "checksum": "726a84b3293c1eec5a3ec866ee2cabb1fdc98dd502459bf0d86c0aec044b7d54",
+      "summary": "Asynchronously initializes the embeddings."
+    },
+    "src/embeddings.ts:embed": {
+      "id": "src/embeddings.ts:embed",
+      "kind": "method_definition",
+      "name": "embed",
+      "namespace": [],
+      "path": "src/embeddings.ts",
+      "start_byte": 5374,
+      "end_byte": 6143,
+      "start_line": 150,
+      "end_line": 171,
+      "checksum": "8fbdac343ed6d10cf4d11b0396a29e6f73e63c90ed56bfe6435c715cfe32c5d7",
+      "summary": "Converts a given text into a numeric vector representation."
+    },
+    "src/embeddings.ts:hashString": {
+      "id": "src/embeddings.ts:hashString",
+      "kind": "method_definition",
+      "name": "hashString",
+      "namespace": [],
+      "path": "src/embeddings.ts",
+      "start_byte": 1850,
+      "end_byte": 2089,
+      "start_line": 54,
+      "end_line": 61,
+      "checksum": "fc90daad8c4c9192322da8e2ed74da44a043a106d0d302a08ae505da55460fde",
+      "summary": "Private function to hash a string using FNV-1a hash algorithm."
+    },
+    "src/embeddings.ts:TensorFlowEmbeddingProvider": {
+      "id": "src/embeddings.ts:TensorFlowEmbeddingProvider",
+      "kind": "class_declaration",
+      "name": "TensorFlowEmbeddingProvider",
+      "namespace": [],
+      "path": "src/embeddings.ts",
+      "start_byte": 2289,
+      "end_byte": 6145,
+      "start_line": 69,
+      "end_line": 172,
+      "checksum": "eabb47cea08baf7cfa502ce90f5e38d90bd8aea0e021988c53cd4dfb24d9d4f5",
+      "summary": "Class implementing EmbeddingProvider using TensorFlow for text embedding."
+    },
+    "src/embeddings.ts:constructor": {
+      "id": "src/embeddings.ts:constructor",
+      "kind": "method_definition",
+      "name": "constructor",
+      "namespace": [],
+      "path": "src/embeddings.ts",
+      "start_byte": 2519,
+      "end_byte": 2664,
+      "start_line": 76,
+      "end_line": 78,
+      "checksum": "74493af7156b05f39949c4388c66f753142fa35e47cc2cbf25bcd93c5c96f60c",
+      "summary": "Constructor for TensorFlowEmbeddingProvider, setting the model path."
+    },
+    "src/embeddings.ts:loadModelFromFiles": {
+      "id": "src/embeddings.ts:loadModelFromFiles",
+      "kind": "method_definition",
+      "name": "loadModelFromFiles",
+      "namespace": [],
+      "path": "src/embeddings.ts",
+      "start_byte": 4045,
+      "end_byte": 5368,
+      "start_line": 117,
+      "end_line": 148,
+      "checksum": "b2ea3b70b7e148b43ef3df367a79a79f0f09cf120179a8ab7154d3f0b01a3bab",
+      "summary": "Loads the TensorFlow model from the specified files, combining the model topology and weight data."
+    },
+    "src/embeddings.ts:createEmbeddingProvider": {
+      "id": "src/embeddings.ts:createEmbeddingProvider",
+      "kind": "function_declaration",
+      "name": "createEmbeddingProvider",
+      "namespace": [],
+      "path": "src/embeddings.ts",
+      "start_byte": 6268,
+      "end_byte": 6688,
+      "start_line": 178,
+      "end_line": 189,
+      "checksum": "5733a73e3c1953b755d4c8b4baefcd89dc67e64635ebb797896c0254527e094e",
+      "summary": "Creates and initializes a TensorFlow embedding provider, falling back to a simple hash embeddings provider if TensorFlow is unavailable."
+    },
     "src/engine.ts:CodeGraphNode": {
       "id": "src/engine.ts:CodeGraphNode",
       "kind": "interface_declaration",
@@ -59,11 +176,11 @@
       "namespace": [],
       "path": "src/engine.ts",
       "start_byte": 1040,
-      "end_byte": 13121,
+      "end_byte": 12955,
       "start_line": 45,
-      "end_line": 332,
-      "checksum": "966a82f685b10fdcbeca3040b24acf86904f6751c42c4c31b325b8269a46a10e",
-      "summary": "Extracts code symbols from source files and builds a code graph."
+      "end_line": 330,
+      "checksum": "d6f64811f6c3afb33d4231bb650b5b3d5557198bab8587911b09185be26c31b5",
+      "summary": "The ExtractionEngine class is responsible for extracting code symbols from source files and generating a map of nodes and specifications."
     },
     "src/engine.ts:constructor": {
       "id": "src/engine.ts:constructor",
@@ -98,11 +215,11 @@
       "namespace": [],
       "path": "src/engine.ts",
       "start_byte": 3115,
-      "end_byte": 11526,
+      "end_byte": 11360,
       "start_line": 95,
-      "end_line": 287,
-      "checksum": "08fa4f957e0004a15a895b9a6e77b1e50a02b8a9301ca129f0dcbaf746bd3942",
-      "summary": "Recursively extracts symbols from files in a directory, summarizes them, and updates the specification map."
+      "end_line": 285,
+      "checksum": "2d47fbf618d20de8a9057b637104d55d0ea7313725f318889bc3cc49bff3cb83",
+      "summary": "The extractAll method traverses the file system, extracts symbols from source files, summarizes them, and generates specifications based on the extracted symbols."
     },
     "src/engine.ts:walk": {
       "id": "src/engine.ts:walk",
@@ -124,11 +241,11 @@
       "namespace": [],
       "path": "src/engine.ts",
       "start_byte": 6187,
-      "end_byte": 7070,
+      "end_byte": 7080,
       "start_line": 168,
       "end_line": 184,
-      "checksum": "7fd4b458b61ec4333ff4196fe7b737c0d95b7ffb987d48b0922f75ec6968bb96",
-      "summary": "An internal helper function that sends a batch of code snippets to an AI summarizer, updates the associated nodes with generated summaries, and persists the updated SpecMap to disk."
+      "checksum": "d52fb069b96a62064ed6397b6113ff02bc828fbbbee8938567c9509543d44167",
+      "summary": "Processes a batch of nodes, summarizing their code and updating the specification map."
     },
     "src/engine.ts:calculateRequirementChecksum": {
       "id": "src/engine.ts:calculateRequirementChecksum",
@@ -136,8 +253,8 @@
       "name": "calculateRequirementChecksum",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 8154,
-      "end_byte": 8457,
+      "start_byte": 8164,
+      "end_byte": 8467,
       "start_line": 211,
       "end_line": 215,
       "checksum": "b902274a4866d197063d4d8e9bd76c4d78b8112fe040f417fe0e8b403d0e9af5",
@@ -149,12 +266,12 @@
       "name": "processSpecBatch",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 9791,
-      "end_byte": 10758,
-      "start_line": 246,
-      "end_line": 264,
-      "checksum": "a62eaa697d0d68d8cdfcf613e22bf671f41245af7df52d42e02801e36af7d4db",
-      "summary": "Processes a batch of nodes to generate specifications, updating the specification map."
+      "start_byte": 9686,
+      "end_byte": 10592,
+      "start_line": 245,
+      "end_line": 262,
+      "checksum": "8d8f03af9123a326c5ed2c0b4e119e3bf2e9dc24398c9f0e977a1ae94097e929",
+      "summary": "Asynchronously processes a batch of code graph nodes, summarizing them and updating the specifications map."
     },
     "src/engine.ts:extractFile": {
       "id": "src/engine.ts:extractFile",
@@ -162,10 +279,10 @@
       "name": "extractFile",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 11532,
-      "end_byte": 13119,
-      "start_line": 289,
-      "end_line": 331,
+      "start_byte": 11366,
+      "end_byte": 12953,
+      "start_line": 287,
+      "end_line": 329,
       "checksum": "312149b2f97bdab7724d58ab36c2ce709d347c979e3b854a0189caa0a514cb21",
       "summary": "Extracts code symbols from a single file based on its language configuration. It parses the file content, applies the language-specific query to find matches, and generates CodeGraphNode objects for each identified symbol."
     },
@@ -175,12 +292,38 @@
       "name": "saveSpecMap",
       "namespace": [],
       "path": "src/engine.ts",
-      "start_byte": 13130,
-      "end_byte": 13416,
-      "start_line": 334,
-      "end_line": 339,
+      "start_byte": 12964,
+      "end_byte": 13250,
+      "start_line": 332,
+      "end_line": 337,
       "checksum": "0c1b0b472f332901b092f246d819bb021aa29aa1778a3dc57ae8baa7db013538",
       "summary": "Saves the provided SpecMap to a JSON file named 'spec-map.json' within the '.drew' directory in the project's root path. It ensures the '.drew' directory exists before writing the file with pretty printing."
+    },
+    "src/index.ts:printPrettyResults": {
+      "id": "src/index.ts:printPrettyResults",
+      "kind": "function_declaration",
+      "name": "printPrettyResults",
+      "namespace": [],
+      "path": "src/index.ts",
+      "start_byte": 6690,
+      "end_byte": 7003,
+      "start_line": 199,
+      "end_line": 209,
+      "checksum": "9cbd26562935127a1471db70f96a8a7499330238c2ffa06766f60b1472f99fc7",
+      "summary": "This function logs search results for a given query, printing a message if no results are found."
+    },
+    "src/index.ts:printPrettyResult": {
+      "id": "src/index.ts:printPrettyResult",
+      "kind": "function_declaration",
+      "name": "printPrettyResult",
+      "namespace": [],
+      "path": "src/index.ts",
+      "start_byte": 7005,
+      "end_byte": 7657,
+      "start_line": 211,
+      "end_line": 227,
+      "checksum": "dd864144d3515ef383a66e95dfdd07e337721b92f537253664f4f33e983bc732",
+      "summary": "This function logs the details of a search result, formatting it based on whether it is a node or a specification."
     },
     "src/summarizer.ts:SummarizerSettings": {
       "id": "src/summarizer.ts:SummarizerSettings",
@@ -208,18 +351,31 @@
       "checksum": "503fedaa6b1c32d4622ce9eca41c1e848bcf0a42edb80836d7dc6d88ac29ffbb",
       "summary": "The `Summarizer` interface defines a contract for services capable of generating technical summaries from code snippets and producing structured specifications. It includes methods for single-code summarization, batch summarization by ID, and a `specialize` method for creating formal requirements based on summaries."
     },
+    "src/summarizer.ts:splitIntoChunks": {
+      "id": "src/summarizer.ts:splitIntoChunks",
+      "kind": "function_declaration",
+      "name": "splitIntoChunks",
+      "namespace": [],
+      "path": "src/summarizer.ts",
+      "start_byte": 900,
+      "end_byte": 1160,
+      "start_line": 25,
+      "end_line": 32,
+      "checksum": "c2ddaa7ad6a7e3ba900a55195e11a363ca5c3b719cdfe19231a02f0a1ba54cd3",
+      "summary": "Splits an array of items into a specified number of chunks."
+    },
     "src/summarizer.ts:AISummarizer": {
       "id": "src/summarizer.ts:AISummarizer",
       "kind": "class_declaration",
       "name": "AISummarizer",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 880,
-      "end_byte": 4790,
-      "start_line": 23,
-      "end_line": 127,
-      "checksum": "c23a6e249fb41afafbc44a847da7ca3d20ee068a903abaef3e4eaf785c0bf618",
-      "summary": "Implements the AISummarizer class, which uses a language model to summarize and specialize code symbols."
+      "start_byte": 1169,
+      "end_byte": 5634,
+      "start_line": 34,
+      "end_line": 148,
+      "checksum": "f15e38217e3a9ac4b2abca77e1d697fda70fbe5d7cabaa24fb7da82d310562ab",
+      "summary": "A class that uses an AI model to summarize code symbols and generate requirements, supporting multiple AI providers."
     },
     "src/summarizer.ts:constructor": {
       "id": "src/summarizer.ts:constructor",
@@ -227,10 +383,10 @@
       "name": "constructor",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 970,
-      "end_byte": 1053,
-      "start_line": 26,
-      "end_line": 28,
+      "start_byte": 1259,
+      "end_byte": 1342,
+      "start_line": 37,
+      "end_line": 39,
       "checksum": "c4ed2bc2dac90d1a85ca67af5899b38926adb602ad5ef0002ad26c2caee613e3",
       "summary": "The constructor for the AISummarizer class, which initializes the instance with the provided SummarizerSettings."
     },
@@ -240,10 +396,10 @@
       "name": "getModel",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 1059,
-      "end_byte": 1683,
-      "start_line": 30,
-      "end_line": 43,
+      "start_byte": 1348,
+      "end_byte": 1972,
+      "start_line": 41,
+      "end_line": 54,
       "checksum": "1c3481ba0d81944b9ff48aef3a74c98baadf2fa610440d40bd26fbe9de5c9268",
       "summary": "Returns a language model based on the provider settings."
     },
@@ -253,10 +409,10 @@
       "name": "summarize",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 1689,
-      "end_byte": 2150,
-      "start_line": 45,
-      "end_line": 58,
+      "start_byte": 1978,
+      "end_byte": 2439,
+      "start_line": 56,
+      "end_line": 69,
       "checksum": "bcb3160b2ebb5da9ca473d109614c487250c6cb670807bab555a8128d53d446a",
       "summary": "Summarizes a given code symbol using a language model."
     },
@@ -266,12 +422,12 @@
       "name": "summarizeBatch",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 2156,
-      "end_byte": 3375,
-      "start_line": 60,
-      "end_line": 92,
-      "checksum": "b5cd50527e87bd03d04e709094993bb165e78b6bdffdd66e7abcfec9aa772905",
-      "summary": "Summarizes multiple code symbols in a batch using a language model."
+      "start_byte": 2445,
+      "end_byte": 3955,
+      "start_line": 71,
+      "end_line": 109,
+      "checksum": "b6faacae81a18e986a66ffa02fa0090ddb337367b9a2aecc204304c0d8ae0425",
+      "summary": "This function takes an array of items, each with an ID and code, and returns a summary for each item. If the provider is 'mock', it generates a mock summary. Otherwise, it uses a model to generate summaries in parallel."
     },
     "src/summarizer.ts:specialize": {
       "id": "src/summarizer.ts:specialize",
@@ -279,12 +435,12 @@
       "name": "specialize",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 3381,
-      "end_byte": 4788,
-      "start_line": 94,
-      "end_line": 126,
-      "checksum": "cee47a0678ca14bd9920584dd7ca8d27072a66be617bb07eceabb420675f565e",
-      "summary": "Generates high-level requirements and acceptance criteria for code symbols using a language model."
+      "start_byte": 3961,
+      "end_byte": 5632,
+      "start_line": 111,
+      "end_line": 147,
+      "checksum": "5eea3e26f7915efe76b6241a1c5bad5da426cf039d4299faaf8ba3983b8ccea6",
+      "summary": "This function takes an array of items, each with an ID and summary, and returns a detailed specification for each item. If the provider is 'mock', it generates a mock specification. Otherwise, it uses a model to generate specifications in parallel."
     },
     "src/summarizer.ts:loadSettings": {
       "id": "src/summarizer.ts:loadSettings",
@@ -292,12 +448,233 @@
       "name": "loadSettings",
       "namespace": [],
       "path": "src/summarizer.ts",
-      "start_byte": 4799,
-      "end_byte": 6435,
-      "start_line": 129,
-      "end_line": 173,
-      "checksum": "901ef1799d103d5f3a82338d71579fe85f96438d2cf4ee265d045d19ede5485c",
-      "summary": "Loads and validates the summarizer settings from a configuration file."
+      "start_byte": 5643,
+      "end_byte": 7282,
+      "start_line": 150,
+      "end_line": 194,
+      "checksum": "c945fb7feb6ceda03fbe12cfedb916e298f4b4f428e730ad39a50078a10ef5e9",
+      "summary": "This function loads the summarizer settings from a file. It checks for the provider type and ensures all necessary settings are provided. It returns the settings object with the provider, model, and other relevant details."
+    },
+    "src/vectorstore.ts:SearchResult": {
+      "id": "src/vectorstore.ts:SearchResult",
+      "kind": "interface_declaration",
+      "name": "SearchResult",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 422,
+      "end_byte": 584,
+      "start_line": 17,
+      "end_line": 23,
+      "checksum": "96657a99a2ace7e80e304f93c14d93ccc75a8ae261eb20398157abbef262347c",
+      "summary": "A structure representing a search result, including the document's ID, type, score, and data."
+    },
+    "src/vectorstore.ts:nodeSearchableText": {
+      "id": "src/vectorstore.ts:nodeSearchableText",
+      "kind": "function_declaration",
+      "name": "nodeSearchableText",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 586,
+      "end_byte": 790,
+      "start_line": 25,
+      "end_line": 29,
+      "checksum": "f45e1aae5505346306152996611780f26487f4a16cc44b14f098491a37147b87",
+      "summary": "Extracts searchable text from a node for indexing."
+    },
+    "src/vectorstore.ts:specSearchableText": {
+      "id": "src/vectorstore.ts:specSearchableText",
+      "kind": "function_declaration",
+      "name": "specSearchableText",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 792,
+      "end_byte": 1234,
+      "start_line": 31,
+      "end_line": 43,
+      "checksum": "53beee72990cad2c9fa7f4a66d4b16dbcb466c8be3ee803a796dc3b2e60706bb",
+      "summary": "Extracts searchable text from a specification for indexing."
+    },
+    "src/vectorstore.ts:encodeId": {
+      "id": "src/vectorstore.ts:encodeId",
+      "kind": "function_declaration",
+      "name": "encodeId",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 1289,
+      "end_byte": 1380,
+      "start_line": 46,
+      "end_line": 48,
+      "checksum": "2d9772fbf78a0e28d2cb9cccad0097cacc45c2faa646e4799b72e25ff49c6179",
+      "summary": "Encodes a string ID into a format suitable for use as a document ID in the vector store."
+    },
+    "src/vectorstore.ts:decodeId": {
+      "id": "src/vectorstore.ts:decodeId",
+      "kind": "function_declaration",
+      "name": "decodeId",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 1433,
+      "end_byte": 1536,
+      "start_line": 51,
+      "end_line": 53,
+      "checksum": "e2d93de4b92284c9ae4caeacc37edb8aad9a709abbb65ee333f33a8c4c51ed6e",
+      "summary": "Decodes a base64url encoded string to a readable string."
+    },
+    "src/vectorstore.ts:buildSchema": {
+      "id": "src/vectorstore.ts:buildSchema",
+      "kind": "function_declaration",
+      "name": "buildSchema",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 1538,
+      "end_byte": 2561,
+      "start_line": 55,
+      "end_line": 79,
+      "checksum": "a8c142bee15e58bc373e5e01863f68390b7599a786d5634a1bfdec318790de6b",
+      "summary": "Builds a schema for a vector collection with specified fields and index parameters."
+    },
+    "src/vectorstore.ts:DrewVectorStore": {
+      "id": "src/vectorstore.ts:DrewVectorStore",
+      "kind": "class_declaration",
+      "name": "DrewVectorStore",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 2570,
+      "end_byte": 8948,
+      "start_line": 81,
+      "end_line": 272,
+      "checksum": "0f2035473c4438402724b145a48354dda6a79ba050f3a89ec4a553077f329d71",
+      "summary": "A DrewVectorStore class manages a vector database collection for storing and searching nodes and specifications with embeddings."
+    },
+    "src/vectorstore.ts:constructor": {
+      "id": "src/vectorstore.ts:constructor",
+      "kind": "method_definition",
+      "name": "constructor",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 2671,
+      "end_byte": 2845,
+      "start_line": 85,
+      "end_line": 90,
+      "checksum": "39213c39c4d9bef9686f42c6e8d4e2cb6fa002646fd8e8e18cd1f3ecc8991abb",
+      "summary": "Initializes the DrewVectorStore class with a root path and an embedder."
+    },
+    "src/vectorstore.ts:create": {
+      "id": "src/vectorstore.ts:create",
+      "kind": "method_definition",
+      "name": "create",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 2851,
+      "end_byte": 3682,
+      "start_line": 92,
+      "end_line": 113,
+      "checksum": "c6dc323477039f4d4433568abf2dd8ceb54cc455831c1eb34ccbfbd909cd288c",
+      "summary": "Creates or reindexes the vector store based on the provided schema."
+    },
+    "src/vectorstore.ts:open": {
+      "id": "src/vectorstore.ts:open",
+      "kind": "method_definition",
+      "name": "open",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 3688,
+      "end_byte": 3938,
+      "start_line": 115,
+      "end_line": 122,
+      "checksum": "4c7a5126fd255a2b9f0e23efea39d1f8c1d28bc4589626915a9f55c581e24ba2",
+      "summary": "Opens an existing vector store if it exists."
+    },
+    "src/vectorstore.ts:indexAll": {
+      "id": "src/vectorstore.ts:indexAll",
+      "kind": "method_definition",
+      "name": "indexAll",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 3944,
+      "end_byte": 5915,
+      "start_line": 124,
+      "end_line": 179,
+      "checksum": "6d96bf0fb0f76586922d96741d09a09421bed6467264cef5f6b39be5d3ac3432",
+      "summary": "Indexes all nodes and specifications into the vector store, updating or inserting them as necessary."
+    },
+    "src/vectorstore.ts:search": {
+      "id": "src/vectorstore.ts:search",
+      "kind": "method_definition",
+      "name": "search",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 5921,
+      "end_byte": 6663,
+      "start_line": 181,
+      "end_line": 201,
+      "checksum": "355c3611ce78998d95e4aa79f85cbc28e6a28cec01e4ef3f9d51567c613e0ed2",
+      "summary": "The search method in DrewVectorStore class allows searching for nodes and specifications based on a query, limit, and optional type filter."
+    },
+    "src/vectorstore.ts:get": {
+      "id": "src/vectorstore.ts:get",
+      "kind": "method_definition",
+      "name": "get",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 6669,
+      "end_byte": 7048,
+      "start_line": 203,
+      "end_line": 213,
+      "checksum": "e7fe3b5cc5fe72216706c1a8e94649c324e66b33b2a3484c0b6c11bffddf9306",
+      "summary": "Asynchronously retrieves a single document from the vector store by its encoded ID, returning the document or null if not found."
+    },
+    "src/vectorstore.ts:delete": {
+      "id": "src/vectorstore.ts:delete",
+      "kind": "method_definition",
+      "name": "delete",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 7054,
+      "end_byte": 7379,
+      "start_line": 215,
+      "end_line": 224,
+      "checksum": "ce6c609372763978484928280161995273d13facde20fd2399be4786818024f4",
+      "summary": "Asynchronously deletes a document from the vector store by its encoded ID, returning true if the document was found and deleted."
+    },
+    "src/vectorstore.ts:close": {
+      "id": "src/vectorstore.ts:close",
+      "kind": "method_definition",
+      "name": "close",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 7385,
+      "end_byte": 7621,
+      "start_line": 226,
+      "end_line": 235,
+      "checksum": "c19cf9b6c6911450e57687742d16729edcdf985a237ea23607e24fe81a178e0f",
+      "summary": "Closes the vector store, ensuring all resources are released and the collection is marked as null."
+    },
+    "src/vectorstore.ts:resolveResults": {
+      "id": "src/vectorstore.ts:resolveResults",
+      "kind": "method_definition",
+      "name": "resolveResults",
+      "namespace": [],
+      "path": "src/vectorstore.ts",
+      "start_byte": 7627,
+      "end_byte": 8946,
+      "start_line": 237,
+      "end_line": 271,
+      "checksum": "533aded86c00d4185d44894dc184e11e3c7ca0be6334e2474457080fcda70384",
+      "summary": "Resolves search results into a list of SearchResult objects, including linked nodes for spec documents."
+    },
+    "tests/vectorstore.test.ts:makeSpecMap": {
+      "id": "tests/vectorstore.test.ts:makeSpecMap",
+      "kind": "function_declaration",
+      "name": "makeSpecMap",
+      "namespace": [],
+      "path": "tests/vectorstore.test.ts",
+      "start_byte": 318,
+      "end_byte": 2899,
+      "start_line": 8,
+      "end_line": 75,
+      "checksum": "9acc7a5f4d1c8764397eef90f7b9a7d2ea0fd7ba88cbdf0623e3ccd28e43185e",
+      "summary": "Creates a SpecMap object with nodes and specifications for testing, simulating a map of code symbols and requirements."
     }
   },
   "specifications": {
@@ -449,64 +826,6 @@
       ],
       "checksum": "d75a53ed41ef2beb05da847d6745230415594c60fd04879d7d5fee8b430a648a"
     },
-    "src/engine.ts:ExtractionEngine": {
-      "id": "src/engine.ts:ExtractionEngine",
-      "description": "Extract code symbols from source files and build a code graph.",
-      "acceptance_criteria": [
-        "ExtractionEngine should successfully extract code symbols from source files.",
-        "ExtractionEngine should build a code graph from the extracted symbols."
-      ],
-      "node_ids": [
-        "src/engine.ts:ExtractionEngine",
-        "src/engine.ts:extractAll",
-        "src/engine.ts:processBatch",
-        "src/engine.ts:processSpecBatch"
-      ],
-      "checksum": "876afc58e6547237a150b1c8c6c92f67468ad7c3578952b4f90a7dc39afcbf3d"
-    },
-    "src/engine.ts:extractAll": {
-      "id": "src/engine.ts:extractAll",
-      "description": "Recursively extract symbols from files in a directory, summarize them, and update the specification map.",
-      "acceptance_criteria": [
-        "extractAll should recursively extract symbols from files in a directory.",
-        "extractAll should summarize the extracted symbols.",
-        "extractAll should update the specification map with the summarized symbols."
-      ],
-      "node_ids": [
-        "src/engine.ts:extractAll",
-        "src/engine.ts:processBatch",
-        "src/engine.ts:processSpecBatch"
-      ],
-      "checksum": "227d14d68e8f6d36fdf1f3dc25f60d6c145dc55809a8fb706cf2e076cf0e2bbc"
-    },
-    "src/engine.ts:processBatch": {
-      "id": "src/engine.ts:processBatch",
-      "description": "Send a batch of code snippets to an AI summarizer, update the associated nodes with generated summaries, and persist the updated SpecMap to disk.",
-      "acceptance_criteria": [
-        "processBatch should send a batch of code snippets to an AI summarizer.",
-        "processBatch should update the associated nodes with generated summaries.",
-        "processBatch should persist the updated SpecMap to disk."
-      ],
-      "node_ids": [
-        "src/engine.ts:processBatch",
-        "src/summarizer.ts:AISummarizer",
-        "src/summarizer.ts:summarizeBatch"
-      ],
-      "checksum": "62e83626c7eb4cfb163dd760f5367bfba89fb3f59f7f8e51cb8d539b14e41bac"
-    },
-    "src/engine.ts:processSpecBatch": {
-      "id": "src/engine.ts:processSpecBatch",
-      "description": "Process a batch of nodes to generate specifications, updating the specification map.",
-      "acceptance_criteria": [
-        "processSpecBatch should process a batch of nodes to generate specifications.",
-        "processSpecBatch should update the specification map with the generated specifications."
-      ],
-      "node_ids": [
-        "src/engine.ts:processSpecBatch",
-        "src/summarizer.ts:specialize"
-      ],
-      "checksum": "2e7e6b652d0058663761d8089bf7567652fdf35e1cc9c037a21cd7cc60063118"
-    },
     "src/summarizer.ts:SummarizerSettings": {
       "id": "src/summarizer.ts:SummarizerSettings",
       "description": "Define the settings for the summarizer, including the provider, model, and optional API keys.",
@@ -520,21 +839,6 @@
         "src/summarizer.ts:getModel"
       ],
       "checksum": "7e1463b467313ad1f2a1b78a5b65fddcfa670fb1b594b3cc79c099401426bcee"
-    },
-    "src/summarizer.ts:AISummarizer": {
-      "id": "src/summarizer.ts:AISummarizer",
-      "description": "Implement the AISummarizer class, which uses a language model to summarize and specialize code symbols.",
-      "acceptance_criteria": [
-        "AISummarizer should implement the AISummarizer class.",
-        "AISummarizer should use a language model to summarize and specialize code symbols."
-      ],
-      "node_ids": [
-        "src/summarizer.ts:AISummarizer",
-        "src/summarizer.ts:summarize",
-        "src/summarizer.ts:summarizeBatch",
-        "src/summarizer.ts:specialize"
-      ],
-      "checksum": "b02365b31c17e4040bfa31453ad3c7dffae8a9d3d06d2cab2830c9e8ed92d393"
     },
     "src/summarizer.ts:constructor": {
       "id": "src/summarizer.ts:constructor",
@@ -572,42 +876,462 @@
       ],
       "checksum": "e20419129474b40e3c1b4624a19fc2b80ecc030de19d30c1390636fb2544ca22"
     },
-    "src/summarizer.ts:summarizeBatch": {
-      "id": "src/summarizer.ts:summarizeBatch",
-      "description": "Summarize multiple code symbols in a batch using a language model.",
+    "src/vectorstore.ts:indexAll": {
+      "id": "src/vectorstore.ts:indexAll",
+      "description": "The system shall index all nodes and specifications into the vector store, updating or inserting them as necessary.",
       "acceptance_criteria": [
-        "summarizeBatch should summarize multiple code symbols in a batch using a language model."
+        "The system can index all nodes and specifications into the vector store.",
+        "The system can update or insert nodes and specifications into the vector store as necessary."
       ],
       "node_ids": [
-        "src/summarizer.ts:summarizeBatch",
-        "src/summarizer.ts:getModel"
+        "src/vectorstore.ts:indexAll"
       ],
-      "checksum": "1132be3e9d4296635c0af32468fb5812de9cb15588ea4bc064bb4c8e0df24504"
+      "checksum": "12ea1a360803ec0dcb4806c57997b80a34b01c730b452a4751f7625aa3db622a"
+    },
+    "src/vectorstore.ts:get": {
+      "id": "src/vectorstore.ts:get",
+      "description": "The system shall asynchronously retrieve a single document from the vector store by its encoded ID, returning the document or null if not found.",
+      "acceptance_criteria": [
+        "The system can asynchronously retrieve a single document from the vector store.",
+        "The system returns the document if it is found.",
+        "The system returns null if the document is not found."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:get"
+      ],
+      "checksum": "1c180f3fd60105a19f173e37b319e1d22131e83e281bbb83068daa76778fe6bc"
+    },
+    "src/vectorstore.ts:delete": {
+      "id": "src/vectorstore.ts:delete",
+      "description": "Asynchronously deletes a document from the vector store by its encoded ID, returning true if the document was found and deleted.",
+      "acceptance_criteria": [
+        "The function should accept an encoded ID as input.",
+        "The function should return true if the document was found and deleted.",
+        "The function should return false if the document was not found."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:delete"
+      ],
+      "checksum": "810c9418ae6264c7f6f034f6ca3f8dd5e91b2f37d1d963d8e6ab428388fb9692"
+    },
+    "src/vectorstore.ts:close": {
+      "id": "src/vectorstore.ts:close",
+      "description": "Closes the vector store, ensuring all resources are released and the collection is marked as null.",
+      "acceptance_criteria": [
+        "The function should release all resources associated with the vector store.",
+        "The function should mark the collection as null after closing."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:close"
+      ],
+      "checksum": "f04dfc03628e4b2a2c8d4415498401f9606de8bffebe534c28aec7d9e60d2eac"
+    },
+    "src/vectorstore.ts:resolveResults": {
+      "id": "src/vectorstore.ts:resolveResults",
+      "description": "Resolves search results into a list of SearchResult objects, including linked nodes for spec documents.",
+      "acceptance_criteria": [
+        "The function should accept search results as input.",
+        "The function should return a list of SearchResult objects.",
+        "Each SearchResult object should include linked nodes for spec documents."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:resolveResults"
+      ],
+      "checksum": "5dfcc28b7b28a242abcaa61bf5653cb95edfddf287c248fb1f881aee7c27e1f6"
+    },
+    "tests/vectorstore.test.ts:makeSpecMap": {
+      "id": "tests/vectorstore.test.ts:makeSpecMap",
+      "description": "Creates a SpecMap object with nodes and specifications for testing, simulating a map of code symbols and requirements.",
+      "acceptance_criteria": [
+        "SpecMap object is created successfully.",
+        "SpecMap object contains the correct nodes and specifications.",
+        "SpecMap object can be used to simulate a map of code symbols and requirements for testing."
+      ],
+      "node_ids": [
+        "tests/vectorstore.test.ts:makeSpecMap"
+      ],
+      "checksum": "952b3ff78e9a17b12923c0bf6089f19865d74f670907dcafad5da96cf17b2c19"
+    },
+    "src/vectorstore.ts:search": {
+      "id": "src/vectorstore.ts:search",
+      "description": "The search method in DrewVectorStore class allows searching for nodes and specifications based on a query, limit, and optional type filter.",
+      "acceptance_criteria": [
+        "The search method should return a list of nodes and specifications that match the query.",
+        "The search method should support limiting the number of results returned.",
+        "The search method should support an optional type filter to restrict results to a specific type."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:search"
+      ],
+      "checksum": "2e987314e11c5f093088a74f6ce5d3dea03f46da7272a01fac6aa9234ea1835b"
+    },
+    "src/embeddings.ts:EmbeddingProvider": {
+      "id": "src/embeddings.ts:EmbeddingProvider",
+      "description": "An interface defining an embedding provider with initialize, embed, and dimension properties.",
+      "acceptance_criteria": [
+        "The interface should have an initialize method that asynchronously initializes the embeddings.",
+        "The interface should have an embed method that converts a given text into a numeric vector representation.",
+        "The interface should have a dimension property that returns the dimensionality of the embeddings."
+      ],
+      "node_ids": [
+        "src/embeddings.ts:initialize",
+        "src/embeddings.ts:embed",
+        "src/embeddings.ts:dimension"
+      ],
+      "checksum": "2007759e0867dc07b1d12362404d1577eb015a4b7220ef69323ff6cb3e3c4b1d"
+    },
+    "src/embeddings.ts:SimpleEmbeddingProvider": {
+      "id": "src/embeddings.ts:SimpleEmbeddingProvider",
+      "description": "A class implementing EmbeddingProvider with basic n-gram based text embedding.",
+      "acceptance_criteria": [
+        "The class should implement the EmbeddingProvider interface.",
+        "The class should provide an n-gram based text embedding.",
+        "The class should handle edge cases such as empty or very short text inputs gracefully."
+      ],
+      "node_ids": [
+        "src/embeddings.ts:EmbeddingProvider"
+      ],
+      "checksum": "00d55421d515bdd5c038c134f33d9775d1e10bac0b62d31a8b6a108361136d5d"
+    },
+    "src/embeddings.ts:initialize": {
+      "id": "src/embeddings.ts:initialize",
+      "description": "Asynchronously initializes the embeddings.",
+      "acceptance_criteria": [
+        "The method should return a Promise that resolves when the embeddings are initialized.",
+        "The method should handle errors during initialization gracefully."
+      ],
+      "node_ids": [],
+      "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "src/embeddings.ts:embed": {
+      "id": "src/embeddings.ts:embed",
+      "description": "Converts a given text into a numeric vector representation.",
+      "acceptance_criteria": [
+        "The method should return a numeric vector representation of the given text.",
+        "The method should handle errors during embedding gracefully."
+      ],
+      "node_ids": [],
+      "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "src/embeddings.ts:hashString": {
+      "id": "src/embeddings.ts:hashString",
+      "description": "Private function to hash a string using FNV-1a hash algorithm.",
+      "acceptance_criteria": [
+        "The function should return a hash value for the given string.",
+        "The function should use the FNV-1a hash algorithm."
+      ],
+      "node_ids": [],
+      "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "src/embeddings.ts:TensorFlowEmbeddingProvider": {
+      "id": "src/embeddings.ts:TensorFlowEmbeddingProvider",
+      "description": "Class implementing EmbeddingProvider using TensorFlow for text embedding.",
+      "acceptance_criteria": [
+        "The class should implement the EmbeddingProvider interface.",
+        "The class should use TensorFlow for text embedding.",
+        "The class should handle errors during TensorFlow operations gracefully."
+      ],
+      "node_ids": [
+        "src/embeddings.ts:EmbeddingProvider"
+      ],
+      "checksum": "00d55421d515bdd5c038c134f33d9775d1e10bac0b62d31a8b6a108361136d5d"
+    },
+    "src/embeddings.ts:constructor": {
+      "id": "src/embeddings.ts:constructor",
+      "description": "Constructor for TensorFlowEmbeddingProvider, setting the model path.",
+      "acceptance_criteria": [
+        "The constructor should set the model path for the TensorFlowEmbeddingProvider.",
+        "The constructor should handle errors during model path setting gracefully."
+      ],
+      "node_ids": [],
+      "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "src/embeddings.ts:loadModelFromFiles": {
+      "id": "src/embeddings.ts:loadModelFromFiles",
+      "description": "Loads the TensorFlow model from the specified files, combining the model topology and weight data.",
+      "acceptance_criteria": [
+        "The method should load the TensorFlow model from the specified files.",
+        "The method should handle errors during model loading gracefully."
+      ],
+      "node_ids": [],
+      "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "src/embeddings.ts:createEmbeddingProvider": {
+      "id": "src/embeddings.ts:createEmbeddingProvider",
+      "description": "Creates and initializes a TensorFlow embedding provider, falling back to a simple hash embeddings provider if TensorFlow is unavailable.",
+      "acceptance_criteria": [
+        "The method should create and initialize a TensorFlow embedding provider.",
+        "The method should fall back to a simple hash embeddings provider if TensorFlow is unavailable.",
+        "The method should handle errors during creation and initialization gracefully."
+      ],
+      "node_ids": [
+        "src/embeddings.ts:TensorFlowEmbeddingProvider",
+        "src/embeddings.ts:SimpleEmbeddingProvider"
+      ],
+      "checksum": "349ab176c976b3db5632945fb5a6afe8a43bb36b603ab91e01192d39dbdf0a79"
+    },
+    "src/engine.ts:ExtractionEngine": {
+      "id": "src/engine.ts:ExtractionEngine",
+      "description": "The ExtractionEngine class is responsible for extracting code symbols from source files and generating a map of nodes and specifications.",
+      "acceptance_criteria": [
+        "The class should extract code symbols from source files.",
+        "The class should generate a map of nodes and specifications from the extracted code symbols.",
+        "The class should handle errors during extraction and mapping gracefully."
+      ],
+      "node_ids": [],
+      "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "src/engine.ts:extractAll": {
+      "id": "src/engine.ts:extractAll",
+      "description": "The extractAll method should traverse the file system, extract symbols from source files, summarize them, and generate specifications based on the extracted symbols.",
+      "acceptance_criteria": [
+        "The extractAll method should traverse the file system.",
+        "The extractAll method should extract symbols from source files.",
+        "The extractAll method should summarize the extracted symbols.",
+        "The extractAll method should generate specifications based on the extracted symbols."
+      ],
+      "node_ids": [
+        "src/engine.ts:extractAll"
+      ],
+      "checksum": "c8737c1ca31d829f1b18fdf4b1ce93f5f12f084deccd6bae218c06cc1333e9ce"
+    },
+    "src/engine.ts:processBatch": {
+      "id": "src/engine.ts:processBatch",
+      "description": "The processBatch method should process a batch of nodes, summarizing their code and updating the specification map.",
+      "acceptance_criteria": [
+        "The processBatch method should process a batch of nodes.",
+        "The processBatch method should summarize the code of the nodes.",
+        "The processBatch method should update the specification map."
+      ],
+      "node_ids": [
+        "src/engine.ts:processBatch"
+      ],
+      "checksum": "8c059ecc97ac03b07668b726c3d8e690840ae6427907abfeded62fcd667a2d63"
+    },
+    "src/engine.ts:processSpecBatch": {
+      "id": "src/engine.ts:processSpecBatch",
+      "description": "The processSpecBatch method should asynchronously process a batch of code graph nodes, summarizing them and updating the specifications map.",
+      "acceptance_criteria": [
+        "The processSpecBatch method should asynchronously process a batch of code graph nodes.",
+        "The processSpecBatch method should summarize the nodes.",
+        "The processSpecBatch method should update the specifications map."
+      ],
+      "node_ids": [
+        "src/engine.ts:processSpecBatch"
+      ],
+      "checksum": "8f26880488e6ec06249054b201912a4d65144732702215efcef4f8566cd4d47d"
+    },
+    "src/index.ts:printPrettyResults": {
+      "id": "src/index.ts:printPrettyResults",
+      "description": "The printPrettyResults function should log search results for a given query, printing a message if no results are found.",
+      "acceptance_criteria": [
+        "The printPrettyResults function should log search results for a given query.",
+        "The printPrettyResults function should print a message if no results are found."
+      ],
+      "node_ids": [
+        "src/index.ts:printPrettyResults"
+      ],
+      "checksum": "8e0d387e3c201329f296e3c8417e31b5bd31d00981573a6d377868bad4cff0a2"
+    },
+    "src/index.ts:printPrettyResult": {
+      "id": "src/index.ts:printPrettyResult",
+      "description": "The printPrettyResult function should log the details of a search result, formatting it based on whether it is a node or a specification.",
+      "acceptance_criteria": [
+        "The printPrettyResult function should log the details of a search result.",
+        "The printPrettyResult function should format the result based on whether it is a node or a specification."
+      ],
+      "node_ids": [
+        "src/index.ts:printPrettyResult"
+      ],
+      "checksum": "3782bcb22f3409cfef1b112031ac46c3391f0a616857aa8722469ec95268dece"
+    },
+    "src/summarizer.ts:splitIntoChunks": {
+      "id": "src/summarizer.ts:splitIntoChunks",
+      "description": "The splitIntoChunks function should split an array of items into a specified number of chunks.",
+      "acceptance_criteria": [
+        "The splitIntoChunks function should split an array of items.",
+        "The splitIntoChunks function should split the array into a specified number of chunks."
+      ],
+      "node_ids": [
+        "src/summarizer.ts:splitIntoChunks"
+      ],
+      "checksum": "01aaae68c7655e0168f49c1d999e75fe07e4e04e22f22677f773e5c7c965d54f"
+    },
+    "src/summarizer.ts:AISummarizer": {
+      "id": "src/summarizer.ts:AISummarizer",
+      "description": "The AISummarizer class should use an AI model to summarize code symbols and generate requirements, supporting multiple AI providers.",
+      "acceptance_criteria": [
+        "The AISummarizer class should use an AI model to summarize code symbols.",
+        "The AISummarizer class should generate requirements.",
+        "The AISummarizer class should support multiple AI providers."
+      ],
+      "node_ids": [
+        "src/summarizer.ts:AISummarizer"
+      ],
+      "checksum": "358e8ccb30443cbd3ea48d5267298bad2323938a3c4164d704a31d8111ffc65c"
+    },
+    "src/summarizer.ts:summarizeBatch": {
+      "id": "src/summarizer.ts:summarizeBatch",
+      "description": "The summarizeBatch function should take an array of items, each with an ID and code, and return a summary for each item. If the provider is 'mock', it should generate a mock summary. Otherwise, it should use a model to generate summaries in parallel.",
+      "acceptance_criteria": [
+        "The summarizeBatch function should take an array of items, each with an ID and code.",
+        "The summarizeBatch function should return a summary for each item.",
+        "If the provider is 'mock', the summarizeBatch function should generate a mock summary.",
+        "Otherwise, the summarizeBatch function should use a model to generate summaries in parallel."
+      ],
+      "node_ids": [
+        "src/summarizer.ts:summarizeBatch"
+      ],
+      "checksum": "d508ad36b33ae8b560e88bc484ab78cf30d08f7e6c7484e527b537aae10ccde5"
     },
     "src/summarizer.ts:specialize": {
       "id": "src/summarizer.ts:specialize",
-      "description": "Generate high-level requirements and acceptance criteria for code symbols using a language model.",
+      "description": "The specialize function should take an array of items, each with an ID and summary, and return a detailed specification for each item. If the provider is 'mock', it should generate a mock specification. Otherwise, it should use a model to generate specifications in parallel.",
       "acceptance_criteria": [
-        "specialize should generate high-level requirements and acceptance criteria for code symbols using a language model."
+        "The specialize function should take an array of items, each with an ID and summary.",
+        "The specialize function should return a detailed specification for each item.",
+        "If the provider is 'mock', the specialize function should generate a mock specification.",
+        "Otherwise, the specialize function should use a model to generate specifications in parallel."
       ],
       "node_ids": [
-        "src/summarizer.ts:specialize",
-        "src/summarizer.ts:getModel"
+        "src/summarizer.ts:specialize"
       ],
-      "checksum": "a43978d9ae7621dc4fe55820c0c57a25d0dcd68603b0fcf0dd44da6ff8e79c95"
+      "checksum": "92be479f54f4b1e17f98c9e20287cc3b077ac9b6c4755c31de5f33befad1fa78"
     },
     "src/summarizer.ts:loadSettings": {
       "id": "src/summarizer.ts:loadSettings",
-      "description": "Load and validate the summarizer settings from a configuration file.",
+      "description": "The loadSettings function should load the summarizer settings from a file. It should check for the provider type and ensure all necessary settings are provided. It should return the settings object with the provider, model, and other relevant details.",
       "acceptance_criteria": [
-        "loadSettings should load the summarizer settings from a configuration file.",
-        "loadSettings should validate the summarizer settings."
+        "The loadSettings function should load the summarizer settings from a file.",
+        "The loadSettings function should check for the provider type.",
+        "The loadSettings function should ensure all necessary settings are provided.",
+        "The loadSettings function should return the settings object with the provider, model, and other relevant details."
       ],
       "node_ids": [
-        "src/summarizer.ts:loadSettings",
-        "src/summarizer.ts:SummarizerSettings"
+        "src/summarizer.ts:loadSettings"
       ],
-      "checksum": "4dcc1c9da2b9ff39e1a34d79182d78a731d0cd2e28084e9d74e8d3fc4e689970"
+      "checksum": "4870432fce7a9bbce3cfc6ac9494d4af918a95962546091ed908cb7bfae221e8"
+    },
+    "src/vectorstore.ts:SearchResult": {
+      "id": "src/vectorstore.ts:SearchResult",
+      "description": "The system shall represent a search result including the document's ID, type, score, and data.",
+      "acceptance_criteria": [
+        "The search result structure includes document's ID.",
+        "The search result structure includes document's type.",
+        "The search result structure includes score.",
+        "The search result structure includes data."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:SearchResult"
+      ],
+      "checksum": "3309f3ef1486e8ee40651095ad862733ead989bb2c93b701a750134fdbc4a91c"
+    },
+    "src/vectorstore.ts:nodeSearchableText": {
+      "id": "src/vectorstore.ts:nodeSearchableText",
+      "description": "The system shall extract searchable text from a node for indexing.",
+      "acceptance_criteria": [
+        "The system can extract searchable text from a node.",
+        "The extracted text is suitable for indexing."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:nodeSearchableText"
+      ],
+      "checksum": "ffceccfc77d925a9cda9d5ecdec33934c7fc26cd3896fefe823d1817c9ae2f9f"
+    },
+    "src/vectorstore.ts:specSearchableText": {
+      "id": "src/vectorstore.ts:specSearchableText",
+      "description": "The system shall extract searchable text from a specification for indexing.",
+      "acceptance_criteria": [
+        "The system can extract searchable text from a specification.",
+        "The extracted text is suitable for indexing."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:specSearchableText"
+      ],
+      "checksum": "4f7e70706e46052f7247237034ecb6c709d3929d70971cf5c4a41eebc39643f9"
+    },
+    "src/vectorstore.ts:encodeId": {
+      "id": "src/vectorstore.ts:encodeId",
+      "description": "The system shall encode a string ID into a format suitable for use as a document ID in the vector store.",
+      "acceptance_criteria": [
+        "The system can encode a string ID.",
+        "The encoded ID is suitable for use as a document ID in the vector store."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:encodeId"
+      ],
+      "checksum": "521287dd85a9905c3acb37e5e76bcd7b469bb197be73c246035ee89b09a456a9"
+    },
+    "src/vectorstore.ts:decodeId": {
+      "id": "src/vectorstore.ts:decodeId",
+      "description": "The system shall decode a base64url encoded string to a readable string.",
+      "acceptance_criteria": [
+        "The system can decode a base64url encoded string.",
+        "The decoded string is readable."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:decodeId"
+      ],
+      "checksum": "1e911f79f2a408b271f4fecc95310550734d3879e23e6fd0ae6fd53439ac4762"
+    },
+    "src/vectorstore.ts:buildSchema": {
+      "id": "src/vectorstore.ts:buildSchema",
+      "description": "The system shall build a schema for a vector collection with specified fields and index parameters.",
+      "acceptance_criteria": [
+        "The system can build a schema for a vector collection.",
+        "The schema includes specified fields and index parameters."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:buildSchema"
+      ],
+      "checksum": "bb159f47c7edcc45a6a4fb8e158791bf9cdd9f3f7ba4611dab576f566c2d04dc"
+    },
+    "src/vectorstore.ts:DrewVectorStore": {
+      "id": "src/vectorstore.ts:DrewVectorStore",
+      "description": "The system shall manage a vector database collection for storing and searching nodes and specifications with embeddings.",
+      "acceptance_criteria": [
+        "The system can manage a vector database collection.",
+        "The system can store and search nodes and specifications with embeddings."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:DrewVectorStore"
+      ],
+      "checksum": "c6b4e53f477efce2d7bfc9ddd7c1897efb4b76b1b2001167664d6ce1b8a87b43"
+    },
+    "src/vectorstore.ts:constructor": {
+      "id": "src/vectorstore.ts:constructor",
+      "description": "The system shall initialize the DrewVectorStore class with a root path and an embedder.",
+      "acceptance_criteria": [
+        "The DrewVectorStore class can be initialized with a root path.",
+        "The DrewVectorStore class can be initialized with an embedder."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:constructor"
+      ],
+      "checksum": "f676f6cc3779cd33a174ae917556872f22bcd081b20034c5c47ea4dd31f7817b"
+    },
+    "src/vectorstore.ts:create": {
+      "id": "src/vectorstore.ts:create",
+      "description": "The system shall create or reindex the vector store based on the provided schema.",
+      "acceptance_criteria": [
+        "The system can create a vector store based on the provided schema.",
+        "The system can reindex the vector store based on the provided schema."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:create"
+      ],
+      "checksum": "8ff0c2b2301ef8f74559b32a5d853c48146e215ecbf0ae52d547dcabb7c4ab16"
+    },
+    "src/vectorstore.ts:open": {
+      "id": "src/vectorstore.ts:open",
+      "description": "The system shall open an existing vector store if it exists.",
+      "acceptance_criteria": [
+        "The system can open an existing vector store if it exists."
+      ],
+      "node_ids": [
+        "src/vectorstore.ts:open"
+      ],
+      "checksum": "57936efaec891ed41521a86200d568b4bf006dd97e7438aa396133b889ac2c73"
     }
   }
 }

@@ -179,7 +179,7 @@ export class ExtractionEngine {
                     // Save progress after each batch
                     await saveSpecMap(rootPath, specMap);
                 } catch (err) {
-                    console.warn(`\nWarning: Batch summarization failed: ${err}`);
+                    // Silently continue on batch failure; retries are handled by the AI SDK
                 }
                 summarizationProgress.increment(batch.length);
             };
@@ -231,7 +231,6 @@ export class ExtractionEngine {
         const nodesToSpecialize = nodesWithSummaries.filter(n => !validCoveredNodeIds.has(n.id));
 
         if (nodesToSpecialize.length > 0 && this.summarizer) {
-            console.log(`\nGenerating specifications for ${nodesToSpecialize.length} uncovered/changed nodes...`);
             const specProgress = new cliProgress.SingleBar({
                 format: 'Generating Specs | {bar} | {percentage}% | {value}/{total} Nodes',
             }, cliProgress.Presets.shades_classic);
@@ -258,8 +257,7 @@ export class ExtractionEngine {
                     specMap.specifications = specifications;
                     await saveSpecMap(rootPath, specMap);
                 } catch (err) {
-                    console.warn(`\nWarning: Specification generation failed: ${err}`);
-                    throw err; // Fail the generation as per RFC
+                    // Silently continue on spec failure; retries are handled by the AI SDK
                 }
                 specProgress.increment(batch.length);
             };

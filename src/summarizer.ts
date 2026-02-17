@@ -21,6 +21,17 @@ export interface Summarizer {
     specialize(items: { id: string, summary: string }[]): Promise<{ id: string, description: string, acceptance_criteria: string[], node_ids: string[] }[]>;
 }
 
+const PARALLEL_CALLS = 3;
+
+function splitIntoChunks<T>(items: T[], n: number): T[][] {
+    const chunks: T[][] = [];
+    const size = Math.ceil(items.length / n);
+    for (let i = 0; i < items.length; i += size) {
+        chunks.push(items.slice(i, i + size));
+    }
+    return chunks;
+}
+
 export class AISummarizer implements Summarizer {
     private settings: SummarizerSettings;
 
@@ -70,24 +81,30 @@ export class AISummarizer implements Summarizer {
         }
 
         const model = this.getModel();
-        const { object } = await generateObject({
-            model,
-            schema: z.object({
-                summaries: z.array(z.object({
-                    id: z.string(),
-                    summary: z.string()
-                }))
-            }),
-            maxRetries: 5,
-            prompt: `Summarize each of the following code symbols technically and concisely (1-3 sentences).
+        const chunks = splitIntoChunks(items, PARALLEL_CALLS);
+        const chunkResults = await Promise.all(chunks.map(async (chunk) => {
+            const { object } = await generateObject({
+                model,
+                schema: z.object({
+                    summaries: z.array(z.object({
+                        id: z.string(),
+                        summary: z.string()
+                    }))
+                }),
+                maxRetries: 5,
+                prompt: `Summarize each of the following code symbols technically and concisely (1-3 sentences).
 Return a JSON object with a 'summaries' array containing 'id' and 'summary' for each item.
 
-${items.map(item => `ID: ${item.id}\nCODE:\n${item.code}\n---`).join('\n')}`
-        });
+${chunk.map(item => `ID: ${item.id}\nCODE:\n${item.code}\n---`).join('\n')}`
+            });
+            return object;
+        }));
 
         const results: Record<string, string> = {};
-        for (const item of object.summaries) {
-            results[item.id] = item.summary;
+        for (const parsed of chunkResults) {
+            for (const item of parsed.summaries) {
+                results[item.id] = item.summary;
+            }
         }
         return results;
     }
@@ -105,25 +122,29 @@ ${items.map(item => `ID: ${item.id}\nCODE:\n${item.code}\n---`).join('\n')}`
         }
 
         const model = this.getModel();
-        const { object } = await generateObject({
-            model,
-            schema: z.object({
-                specifications: z.array(z.object({
-                    id: z.string(),
-                    description: z.string(),
-                    acceptance_criteria: z.array(z.string()),
-                    node_ids: z.array(z.string())
-                }))
-            }),
-            maxRetries: 5,
-            prompt: `Based on the following code symbol summaries, generate high-level requirements and acceptance criteria in EARS format.
+        const chunks = splitIntoChunks(items, PARALLEL_CALLS);
+        const chunkResults = await Promise.all(chunks.map(async (chunk) => {
+            const { object } = await generateObject({
+                model,
+                schema: z.object({
+                    specifications: z.array(z.object({
+                        id: z.string(),
+                        description: z.string(),
+                        acceptance_criteria: z.array(z.string()),
+                        node_ids: z.array(z.string())
+                    }))
+                }),
+                maxRetries: 5,
+                prompt: `Based on the following code symbol summaries, generate high-level requirements and acceptance criteria in EARS format.
 Link each requirement to the corresponding symbol IDs.
 Return a JSON object with a 'specifications' array.
 
-${items.map(item => `ID: ${item.id}\nSUMMARY: ${item.summary}\n---`).join('\n')}`
-        });
+${chunk.map(item => `ID: ${item.id}\nSUMMARY: ${item.summary}\n---`).join('\n')}`
+            });
+            return object;
+        }));
 
-        return object.specifications;
+        return chunkResults.flatMap(parsed => parsed.specifications);
     }
 }
 
