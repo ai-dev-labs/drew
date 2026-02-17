@@ -224,14 +224,27 @@ function printPrettyResult(r: SearchResult): void {
     if (r.type === 'node') {
         const node = r.data as CodeGraphNode;
         console.log(`  [node] ${r.id}${scoreStr}`);
-        if (node.summary) console.log(`    ${node.summary}`);
+        console.log(`    Kind: ${node.kind}`);
+        console.log(`    Lines: ${node.start_line}-${node.end_line}`);
+        if (node.summary) console.log(`    Summary: ${node.summary}`);
     } else {
         const spec = r.data as Requirement;
         console.log(`  [spec] ${r.id}${scoreStr}`);
         console.log(`    ${spec.description}`);
+        if (spec.acceptance_criteria && spec.acceptance_criteria.length > 0) {
+            console.log(`    Acceptance Criteria:`);
+            for (const ac of spec.acceptance_criteria) {
+                console.log(`      - ${ac}`);
+            }
+        }
         if (r.linkedNodes && r.linkedNodes.length > 0) {
-            const ids = r.linkedNodes.map(n => n.id).join(', ');
-            console.log(`    Nodes: ${ids}`);
+            console.log(`    Linked Nodes:`);
+            for (const node of r.linkedNodes) {
+                console.log(`      - ${node.id}`);
+                console.log(`        Kind: ${node.kind}`);
+                console.log(`        Lines: ${node.start_line}-${node.end_line}`);
+                if (node.summary) console.log(`        Summary: ${node.summary}`);
+            }
         }
     }
 }
