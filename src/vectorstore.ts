@@ -70,26 +70,16 @@ function specSearchableText(spec: Requirement): string {
     return parts.join('\n');
 }
 
-async function mapWithConcurrency<T, R>(items: T[], concurrency: number, fn: (item: T) => Promise<R>): Promise<R[]> {
-    const results: R[] = new Array(items.length);
-    let next = 0;
-    async function worker() {
-        while (next < items.length) {
-            const i = next++;
-            results[i] = await fn(items[i]);
-        }
-    }
-    await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, () => worker()));
-    return results;
-}
-
-/** Auto-tune batch size based on available memory. Clamps to [16, 128], but never exceeds totalItems. */
-export function determineBatchSize(totalItems: number, freeMem?: number): number {
-    const free = freeMem ?? os.freemem();
+/** Auto-tune batch size based on available memory. Clamps to [100, 128], but never exceeds totalItems. */
+export function determineBatchSize(totalItems: number, memOverride?: number): number {
+    // Use total memory instead of free memory — os.freemem() is unreliable on
+    // macOS where aggressive file caching causes it to report very low values
+    // (e.g. ~100MB on a 16GB machine), always hitting the minimum clamp.
+    const mem = memOverride ?? os.totalmem();
     // ~2MB per item in batch (tensors + intermediate)
-    const memoryBudget = Math.floor(free * 0.3);
+    const memoryBudget = Math.floor(mem * 0.3);
     const maxByMemory = Math.floor(memoryBudget / (2 * 1024 * 1024));
-    const clamped = Math.max(16, Math.min(128, maxByMemory));
+    const clamped = Math.max(100, Math.min(128, maxByMemory));
     return Math.min(clamped, totalItems);
 }
 
@@ -238,9 +228,20 @@ export class DrewVectorStore {
         }, cliProgress.Presets.shades_classic);
         progress.start(workItems, 0);
 
-        // ── Phase 1: Batch Embedding (only changed/new items) ──
+        // ── Pipelined Embedding + Upsert ──
+        // Close collection before embedding loop (worker needs exclusive write access).
+        // Embedding does not need the collection handle.
+        this.collection.closeSync();
+        this.collection = null;
+
         const batchSize = determineBatchSize(diff.toEmbed.length);
-        const embedded: { item: IndexableItem; embedding: number[] }[] = [];
+
+        // Track all items sent to worker for fallback recovery
+        const sentItems: { id: string; vectors: { embedding: number[] }; fields: Record<string, string> }[] = [];
+
+        // Spawn upsert worker
+        const { worker, exitPromise } = this.spawnUpsertWorker();
+        let workerAlive = !!worker;
 
         for (let i = 0; i < diff.toEmbed.length; i += batchSize) {
             const batch = diff.toEmbed.slice(i, i + batchSize);
@@ -269,31 +270,46 @@ export class DrewVectorStore {
                 embeddings = await Promise.all(texts.map(t => this.embedder.embed(t)));
             }
 
-            for (let j = 0; j < batch.length; j++) {
-                embedded.push({ item: batch[j], embedding: embeddings[j] });
+            // Build upsert items and post to worker immediately
+            const upsertItems = batch.map((item, j) => ({
+                id: item.id,
+                vectors: { embedding: embeddings[j] },
+                fields: item.fields,
+            }));
+
+            sentItems.push(...upsertItems);
+
+            if (workerAlive && worker) {
+                try {
+                    worker.postMessage({ type: 'batch', items: upsertItems });
+                } catch {
+                    workerAlive = false;
+                }
             }
+
             progress.increment(batch.length);
         }
 
-        // ── Phase 2: Worker Thread Upserts (only changed/new items) ──
-        this.collection.closeSync();
-        this.collection = null;
-
-        const upsertSuccess = await this.upsertViaWorkers(embedded, 1);
-
-        this.collection = ZVecOpen(this.collectionPath);
-
-        if (!upsertSuccess) {
-            for (const { item, embedding } of embedded) {
-                this.collection.upsertSync({
-                    id: item.id,
-                    vectors: { embedding },
-                    fields: item.fields,
-                });
-            }
+        // Signal worker shutdown and await exit
+        let workerSucceeded = false;
+        if (workerAlive && worker) {
+            worker.postMessage({ type: 'shutdown' });
+            const exitCode = await exitPromise;
+            workerSucceeded = exitCode === 0;
+        } else {
+            // Worker was never alive or died — await promise to clean up
+            await exitPromise;
         }
 
-        // ── Phase 3: Delete stale entries ──
+        // Reopen collection for deletes + optimize
+        this.collection = ZVecOpen(this.collectionPath);
+
+        // Fallback: if worker failed, upsert all sent items on main thread using batch API
+        if (!workerSucceeded && sentItems.length > 0) {
+            this.collection.upsertSync(sentItems);
+        }
+
+        // ── Delete stale entries ──
         for (const staleId of diff.toDelete) {
             try {
                 this.collection.deleteSync(staleId);
@@ -424,91 +440,35 @@ export class DrewVectorStore {
         return results;
     }
 
-    /** Dispatch upserts to worker threads. Returns false if all workers failed. */
-    private async upsertViaWorkers(
-        embedded: { item: { id: string; fields: Record<string, string> }; embedding: number[] }[],
-        workerCount: number,
-    ): Promise<boolean> {
-        // Resolve the worker script path — use compiled JS if available, else TS via ts-node
+    /** Spawn a single upsert worker thread. Returns the worker and a promise for its exit code. */
+    private spawnUpsertWorker(): { worker: Worker | null; exitPromise: Promise<number> } {
         const workerScript = fs.pathExistsSync(path.join(__dirname, 'upsert-worker.js'))
             ? path.join(__dirname, 'upsert-worker.js')
             : path.join(__dirname, 'upsert-worker.ts');
 
-        // Check if the worker script exists
         if (!fs.pathExistsSync(workerScript)) {
-            return false; // Signal to fall back to main-thread upserts
+            return { worker: null, exitPromise: Promise.resolve(1) };
         }
 
-        const actualWorkerCount = Math.min(workerCount, embedded.length);
-        if (actualWorkerCount === 0) return true;
+        const execArgv = workerScript.endsWith('.ts')
+            ? ['--require', 'ts-node/register']
+            : [];
 
-        // Split items into per-worker batches
-        const perWorker = Math.ceil(embedded.length / actualWorkerCount);
-        const workerBatches: typeof embedded[] = [];
-        for (let i = 0; i < embedded.length; i += perWorker) {
-            workerBatches.push(embedded.slice(i, i + perWorker));
-        }
-
-        // Close our collection handle before workers open theirs
-        // (zvec may not support concurrent handles from multiple threads)
-        // Instead, we'll try workers and fall back if they can't open the collection.
-
-        const promises = workerBatches.map(batch => {
-            return new Promise<boolean>((resolve) => {
-                let worker: Worker;
-                const execArgv = workerScript.endsWith('.ts')
-                    ? ['--require', 'ts-node/register']
-                    : [];
-
-                try {
-                    worker = new Worker(workerScript, {
-                        workerData: { collectionPath: this.collectionPath },
-                        execArgv,
-                    });
-                } catch {
-                    resolve(false);
-                    return;
-                }
-
-                const items = batch.map(({ item, embedding }) => ({
-                    id: item.id,
-                    vectors: { embedding },
-                    fields: item.fields,
-                }));
-
-                // Split into sub-batches and track completion
-                const subBatchSize = 50;
-                const subBatches: typeof items[] = [];
-                for (let i = 0; i < items.length; i += subBatchSize) {
-                    subBatches.push(items.slice(i, i + subBatchSize));
-                }
-                let completedSubBatches = 0;
-
-                worker.on('message', (msg: any) => {
-                    if (msg.type === 'done' || msg.type === 'error') {
-                        completedSubBatches++;
-                        if (completedSubBatches >= subBatches.length) {
-                            worker.postMessage({ type: 'shutdown' });
-                        }
-                    }
-                });
-
-                worker.on('exit', (code) => {
-                    resolve(code === 0);
-                });
-
-                worker.on('error', () => {
-                    resolve(false);
-                });
-
-                for (const subBatch of subBatches) {
-                    worker.postMessage({ type: 'batch', items: subBatch });
-                }
+        try {
+            const worker = new Worker(workerScript, {
+                workerData: { collectionPath: this.collectionPath },
+                execArgv,
             });
-        });
 
-        const results = await Promise.all(promises);
-        return results.some(r => r); // At least one worker succeeded
+            const exitPromise = new Promise<number>((resolve) => {
+                worker.on('exit', (code) => resolve(code ?? 1));
+                worker.on('error', () => resolve(1));
+            });
+
+            return { worker, exitPromise };
+        } catch {
+            return { worker: null, exitPromise: Promise.resolve(1) };
+        }
     }
 
     async search(query: string, limit: number, typeFilter?: 'node' | 'spec'): Promise<SearchResult[]> {

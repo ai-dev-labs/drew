@@ -221,18 +221,13 @@ export class TensorFlowEmbeddingProvider implements EmbeddingProvider {
 }
 
 /**
- * Create the best available embedding provider.
- * Tries TensorFlow.js first, falls back to simple hash.
+ * Create the default embedding provider.
+ * Uses SimpleEmbeddingProvider (hash-based n-gram) which is fast and sufficient
+ * for code search where symbol names, paths, and kinds are lexically distinctive.
+ * TensorFlowEmbeddingProvider is still available for explicit use if needed.
  */
 export async function createEmbeddingProvider(): Promise<EmbeddingProvider> {
-    try {
-        const provider = new TensorFlowEmbeddingProvider();
-        await provider.initialize();
-        return provider;
-    } catch {
-        console.warn('TensorFlow unavailable, using simple hash embeddings');
-        const provider = new SimpleEmbeddingProvider();
-        await provider.initialize();
-        return provider;
-    }
+    const provider = new SimpleEmbeddingProvider();
+    await provider.initialize();
+    return provider;
 }
