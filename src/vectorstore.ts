@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as cliProgress from 'cli-progress';
 import { CodeGraphNode, Requirement, SpecMap } from './engine';
@@ -14,6 +15,8 @@ const {
     ZVecInitialize,
     isZVecError,
 } = require('@zvec/zvec');
+
+const PARALLEL_INDEX = 10;
 
 export interface SearchResult {
     id: string;
@@ -43,14 +46,22 @@ function specSearchableText(spec: Requirement): string {
     return parts.join('\n');
 }
 
-/** Encode a Drew ID into a zvec-safe document ID */
-function encodeId(id: string): string {
-    return Buffer.from(id).toString('base64url');
+async function mapWithConcurrency<T, R>(items: T[], concurrency: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+    const results: R[] = new Array(items.length);
+    let next = 0;
+    async function worker() {
+        while (next < items.length) {
+            const i = next++;
+            results[i] = await fn(items[i]);
+        }
+    }
+    await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, () => worker()));
+    return results;
 }
 
-/** Decode a zvec document ID back to a Drew ID */
-function decodeId(encoded: string): string {
-    return Buffer.from(encoded, 'base64url').toString();
+/** Encode a Drew ID into a fixed-length zvec-safe document ID */
+function encodeId(id: string): string {
+    return crypto.createHash('sha256').update(id).digest('hex');
 }
 
 function buildSchema() {
@@ -94,14 +105,7 @@ export class DrewVectorStore {
         ZVecInitialize({ logLevel: 3 }); // ERROR only
 
         if (reindex && await fs.pathExists(this.collectionPath)) {
-            // Open and destroy, then recreate
-            try {
-                const existing = ZVecOpen(this.collectionPath);
-                existing.destroySync();
-            } catch {
-                // If open fails, just remove the directory
-                await fs.remove(this.collectionPath);
-            }
+            await fs.remove(this.collectionPath);
         }
 
         if (await fs.pathExists(this.collectionPath)) {
@@ -134,12 +138,13 @@ export class DrewVectorStore {
         }, cliProgress.Presets.shades_classic);
         progress.start(total, 0);
 
-        // Index nodes
+        // Prepare items with their text and field builders
+        const items: { text: string; id: string; fields: Record<string, string> }[] = [];
+
         for (const node of nodes) {
-            const embedding = await this.embedder.embed(nodeSearchableText(node));
-            this.collection.upsertSync({
+            items.push({
+                text: nodeSearchableText(node),
                 id: encodeId(node.id),
-                vectors: { embedding },
                 fields: {
                     type: 'node',
                     original_id: node.id,
@@ -148,17 +153,14 @@ export class DrewVectorStore {
                     path: node.path,
                     kind: node.kind,
                     node_ids: '',
-                }
+                },
             });
-            progress.increment();
         }
 
-        // Index specifications
         for (const spec of specs) {
-            const embedding = await this.embedder.embed(specSearchableText(spec));
-            this.collection.upsertSync({
+            items.push({
+                text: specSearchableText(spec),
                 id: encodeId(spec.id),
-                vectors: { embedding },
                 fields: {
                     type: 'spec',
                     original_id: spec.id,
@@ -167,10 +169,20 @@ export class DrewVectorStore {
                     path: '',
                     kind: '',
                     node_ids: JSON.stringify(spec.node_ids),
-                }
+                },
+            });
+        }
+
+        // Embed and upsert with bounded concurrency
+        await mapWithConcurrency(items, PARALLEL_INDEX, async (item) => {
+            const embedding = await this.embedder.embed(item.text);
+            this.collection.upsertSync({
+                id: item.id,
+                vectors: { embedding },
+                fields: item.fields,
             });
             progress.increment();
-        }
+        });
 
         progress.stop();
 
@@ -245,7 +257,7 @@ export class DrewVectorStore {
 
         return docs.map(doc => {
             const type = doc.fields?.type as 'node' | 'spec';
-            const originalId = doc.fields?.original_id || decodeId(doc.id);
+            const originalId = doc.fields?.original_id || doc.id;
             const content = doc.fields?.content;
             const data = content ? JSON.parse(content) : {};
 
