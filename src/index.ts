@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { ExtractionEngine, saveSpecMap, CodeGraphNode, Requirement } from './engine';
-import { DrewVectorStore, SearchResult } from './vectorstore';
+import { DrewVectorStore, SearchResult, IndexResult } from './vectorstore';
+import { MultiRepoResolver, MultiRepoSearchResult, MultiRepoGetResult } from './multi-repo';
 import { createEmbeddingProvider } from './embeddings';
 import { loadSettings } from './summarizer';
 import * as path from 'path';
@@ -62,8 +63,55 @@ program
     .description('Index spec-map.json into the vector store')
     .argument('[path]', 'Path to the project directory', '.')
     .option('--reindex', 'Delete existing index and rebuild from scratch')
+    .option('--all', 'Index all sibling repositories')
     .action(async (dirPath, options) => {
         const absolutePath = path.resolve(dirPath);
+
+        if (options.all) {
+            try {
+                const resolver = new MultiRepoResolver(absolutePath);
+                const repos = await resolver.discoverSiblingRepos();
+
+                if (repos.length === 0) {
+                    console.error('No indexed repositories found in parent directory.');
+                    process.exit(1);
+                }
+
+                let indexingConcurrency: number | undefined;
+                try {
+                    const settings = await loadSettings();
+                    indexingConcurrency = settings.indexing_concurrency;
+                } catch {
+                    // Settings may not exist for indexing-only use
+                }
+
+                for (const repo of repos) {
+                    if (!await fs.pathExists(repo.specMapPath)) {
+                        console.log(`Skipping ${repo.name}: no spec-map.json`);
+                        continue;
+                    }
+
+                    try {
+                        const specMap = await fs.readJson(repo.specMapPath);
+                        const embedder = await createEmbeddingProvider();
+                        const store = new DrewVectorStore(repo.rootPath, embedder);
+
+                        await store.create(!!options.reindex);
+                        const result = await store.indexAll(specMap, indexingConcurrency);
+                        store.close();
+
+                        console.log(`[${repo.name}] Indexed ${result.nodes + result.specs} items (${result.added} added, ${result.updated} updated, ${result.removed} removed, ${result.unchanged} unchanged)`);
+                    } catch (err: any) {
+                        console.error(`Warning: Could not index '${repo.name}': ${err.message}`);
+                    }
+                }
+            } catch (err: any) {
+                console.error(`Error: ${err.message}`);
+                process.exit(1);
+            }
+            return;
+        }
+
         const specMapPath = path.join(absolutePath, '.drew', 'spec-map.json');
 
         if (!await fs.pathExists(specMapPath)) {
@@ -88,7 +136,7 @@ program
             const result = await store.indexAll(specMap, indexingConcurrency);
             store.close();
 
-            console.log(`Indexed ${result.nodes} nodes and ${result.specs} specifications`);
+            console.log(`Indexed ${result.nodes + result.specs} items (${result.added} added, ${result.updated} updated, ${result.removed} removed, ${result.unchanged} unchanged)`);
         } catch (err: any) {
             console.error(`Error: ${err.message}`);
             process.exit(1);
@@ -102,8 +150,60 @@ program
     .option('--limit <n>', 'Maximum results to return', '10')
     .option('--json', 'Output as JSON')
     .option('--type <type>', 'Filter by type: node or spec')
+    .option('--all', 'Search all sibling repositories')
+    .option('--repo <name>', 'Search a specific sibling repository')
     .action(async (query, options) => {
+        if (options.all && options.repo) {
+            console.error('Error: --all and --repo cannot be used together');
+            process.exit(1);
+        }
+
         const absolutePath = path.resolve('.');
+        const limit = parseInt(options.limit, 10) || 10;
+        const typeFilter = options.type as 'node' | 'spec' | undefined;
+
+        if (options.all || options.repo) {
+            try {
+                const resolver = new MultiRepoResolver(absolutePath);
+                const { opened, failed } = await resolver.openAll();
+
+                if (opened.length === 0) {
+                    console.error('Error: No repositories could be opened.');
+                    resolver.closeAll();
+                    process.exit(1);
+                }
+
+                for (const name of failed) {
+                    console.error(`Warning: Could not open index for '${name}'`);
+                }
+
+                let results: MultiRepoSearchResult[];
+                if (options.repo) {
+                    if (!resolver.hasRepo(options.repo)) {
+                        const available = resolver.getRepoNames().join(', ');
+                        console.error(`Repository '${options.repo}' not found. Available: ${available}`);
+                        resolver.closeAll();
+                        process.exit(1);
+                    }
+                    results = await resolver.searchRepo(options.repo, query, limit, typeFilter);
+                } else {
+                    results = await resolver.searchAll(query, limit, typeFilter);
+                }
+
+                resolver.closeAll();
+
+                if (options.json) {
+                    const repos = [...new Set(results.map(r => r.repo))];
+                    console.log(JSON.stringify({ query, repos, results }, null, 2));
+                } else {
+                    printPrettyMultiRepoResults(query, results);
+                }
+            } catch (err: any) {
+                console.error(`Error: ${err.message}`);
+                process.exit(1);
+            }
+            return;
+        }
 
         try {
             const embedder = await createEmbeddingProvider();
@@ -114,8 +214,6 @@ program
                 process.exit(1);
             }
 
-            const limit = parseInt(options.limit, 10) || 10;
-            const typeFilter = options.type as 'node' | 'spec' | undefined;
             const results = await store.search(query, limit, typeFilter);
             store.close();
 
@@ -135,8 +233,76 @@ program
     .description('Get a document by ID from the vector store')
     .argument('<id>', 'Document ID')
     .option('--json', 'Output as JSON')
+    .option('--all', 'Search all sibling repositories for the ID')
+    .option('--repo <name>', 'Get from a specific sibling repository')
     .action(async (id, options) => {
+        if (options.all && options.repo) {
+            console.error('Error: --all and --repo cannot be used together');
+            process.exit(1);
+        }
+
         const absolutePath = path.resolve('.');
+
+        if (options.all || options.repo) {
+            try {
+                const resolver = new MultiRepoResolver(absolutePath);
+                const { opened, failed } = await resolver.openAll();
+
+                if (opened.length === 0) {
+                    console.error('Error: No repositories could be opened.');
+                    resolver.closeAll();
+                    process.exit(1);
+                }
+
+                for (const name of failed) {
+                    console.error(`Warning: Could not open index for '${name}'`);
+                }
+
+                if (options.repo) {
+                    if (!resolver.hasRepo(options.repo)) {
+                        const available = resolver.getRepoNames().join(', ');
+                        console.error(`Repository '${options.repo}' not found. Available: ${available}`);
+                        resolver.closeAll();
+                        process.exit(1);
+                    }
+                    const result = await resolver.getFromRepo(options.repo, id);
+                    resolver.closeAll();
+
+                    if (!result) {
+                        console.error(`Document '${id}' not found in '${options.repo}'.`);
+                        process.exit(1);
+                    }
+
+                    if (options.json) {
+                        console.log(JSON.stringify(result, null, 2));
+                    } else {
+                        console.log(`[${result.repo}]`);
+                        printPrettyResult(result.result);
+                    }
+                } else {
+                    const results = await resolver.getAll(id);
+                    resolver.closeAll();
+
+                    if (results.length === 0) {
+                        console.error(`Document '${id}' not found in any repository.`);
+                        process.exit(1);
+                    }
+
+                    if (options.json) {
+                        console.log(JSON.stringify(results, null, 2));
+                    } else {
+                        for (const r of results) {
+                            console.log(`[${r.repo}]`);
+                            printPrettyResult(r.result);
+                        }
+                    }
+                }
+            } catch (err: any) {
+                console.error(`Error: ${err.message}`);
+                process.exit(1);
+            }
+            return;
+        }
 
         try {
             const embedder = await createEmbeddingProvider();
@@ -170,8 +336,43 @@ program
     .command('delete')
     .description('Delete a document by ID from the vector store')
     .argument('<id>', 'Document ID')
-    .action(async (id) => {
+    .option('--repo <name>', 'Delete from a specific sibling repository')
+    .action(async (id, options) => {
         const absolutePath = path.resolve('.');
+
+        if (options.repo) {
+            try {
+                const resolver = new MultiRepoResolver(absolutePath);
+                const { opened, failed } = await resolver.openAll();
+
+                if (opened.length === 0) {
+                    console.error('Error: No repositories could be opened.');
+                    resolver.closeAll();
+                    process.exit(1);
+                }
+
+                if (!resolver.hasRepo(options.repo)) {
+                    const available = resolver.getRepoNames().join(', ');
+                    console.error(`Repository '${options.repo}' not found. Available: ${available}`);
+                    resolver.closeAll();
+                    process.exit(1);
+                }
+
+                const deleted = await resolver.deleteFromRepo(options.repo, id);
+                resolver.closeAll();
+
+                if (!deleted) {
+                    console.error(`Document '${id}' not found in '${options.repo}'.`);
+                    process.exit(1);
+                }
+
+                console.log(`Deleted '${id}' from '${options.repo}'`);
+            } catch (err: any) {
+                console.error(`Error: ${err.message}`);
+                process.exit(1);
+            }
+            return;
+        }
 
         try {
             const embedder = await createEmbeddingProvider();
@@ -249,6 +450,50 @@ function printPrettyResult(r: SearchResult): void {
     }
 }
 
+function printPrettyMultiRepoResults(query: string, results: MultiRepoSearchResult[]): void {
+    if (results.length === 0) {
+        console.log(`No results for "${query}"`);
+        return;
+    }
+
+    const repos = [...new Set(results.map(r => r.repo))];
+    console.log(`Results for "${query}" (${results.length} results from ${repos.length} repo${repos.length === 1 ? '' : 's'}):`);
+    for (const r of results) {
+        printPrettyMultiRepoResult(r);
+    }
+}
+
+function printPrettyMultiRepoResult(r: MultiRepoSearchResult): void {
+    const scoreStr = r.score > 0 ? ` (${r.score.toFixed(2)})` : '';
+
+    if (r.type === 'node') {
+        const node = r.data as CodeGraphNode;
+        console.log(`  [node] ${r.id}${scoreStr} [${r.repo}]`);
+        console.log(`    Kind: ${node.kind}`);
+        console.log(`    Lines: ${node.start_line}-${node.end_line}`);
+        if (node.summary) console.log(`    Summary: ${node.summary}`);
+    } else {
+        const spec = r.data as Requirement;
+        console.log(`  [spec] ${r.id}${scoreStr} [${r.repo}]`);
+        console.log(`    ${spec.description}`);
+        if (spec.acceptance_criteria && spec.acceptance_criteria.length > 0) {
+            console.log(`    Acceptance Criteria:`);
+            for (const ac of spec.acceptance_criteria) {
+                console.log(`      - ${ac}`);
+            }
+        }
+        if (r.linkedNodes && r.linkedNodes.length > 0) {
+            console.log(`    Linked Nodes:`);
+            for (const node of r.linkedNodes) {
+                console.log(`      - ${node.id}`);
+                console.log(`        Kind: ${node.kind}`);
+                console.log(`        Lines: ${node.start_line}-${node.end_line}`);
+                if (node.summary) console.log(`        Summary: ${node.summary}`);
+            }
+        }
+    }
+}
+
 // --- Agent instructions ---
 
 const AGENT_INSTRUCTIONS = `# Drew — AI Agent Code Exploration Guide
@@ -270,10 +515,15 @@ behavior. Search, read, then act.
     drew search <query> --type node       # Only code symbols
     drew search <query> --type spec       # Only specifications
     drew search <query> --json            # Machine-readable output
+    drew search <query> --all             # Search all sibling repos
+    drew search <query> --repo <name>     # Search a specific sibling repo
     drew get <id>                         # Full document by ID
     drew get <id> --json                  # Machine-readable output
+    drew get <id> --all                   # Get from all sibling repos
+    drew get <id> --repo <name>           # Get from a specific sibling repo
     drew index                            # Re-index after extraction
     drew index --reindex                  # Full rebuild
+    drew index --all                      # Index all sibling repos
 
 ## Workflow
 
@@ -381,6 +631,22 @@ The JSON schema for search results:
         }
       ]
     }
+
+## Multi-Repository Search
+
+When working across multiple related repos in a workspace (e.g. ~/workplace/),
+use --all to search all sibling repos that have been indexed with drew:
+
+    drew search "authentication" --all       # Search all siblings
+    drew search "auth" --repo my-service     # Search specific sibling
+    drew get "src/auth.ts:login" --all       # Find ID across all repos
+    drew index --all                         # Index all siblings
+
+Multi-repo results include a [repo-name] tag showing which repo each result
+came from. Results are merged and ranked by relevance score across all repos.
+
+JSON output includes a top-level "repos" array listing all repos that
+contributed results.
 
 ## When the Index is Stale
 

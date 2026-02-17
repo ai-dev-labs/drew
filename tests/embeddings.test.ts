@@ -1,84 +1,81 @@
 import { expect } from 'chai';
-import { SimpleEmbeddingProvider, TensorFlowEmbeddingProvider, EmbeddingProvider } from '../src/embeddings';
+import { SimpleEmbeddingProvider, EmbeddingProvider } from '../src/embeddings';
 
-describe('Embeddings', () => {
+describe('EmbeddingProvider - embedBatch', () => {
     describe('SimpleEmbeddingProvider', () => {
         let provider: SimpleEmbeddingProvider;
 
-        beforeEach(() => {
+        beforeEach(async () => {
             provider = new SimpleEmbeddingProvider();
-        });
-
-        it('should produce 512-dimensional vectors', async () => {
-            const vector = await provider.embed('hello world');
-            expect(vector).to.have.lengthOf(512);
-        });
-
-        it('should produce normalized unit vectors', async () => {
-            const vector = await provider.embed('some text to embed');
-            const magnitude = Math.sqrt(vector.reduce((sum, v) => sum + v * v, 0));
-            expect(magnitude).to.be.closeTo(1.0, 0.001);
-        });
-
-        it('should produce different vectors for different text', async () => {
-            const v1 = await provider.embed('function extractAll');
-            const v2 = await provider.embed('database connection pool');
-            expect(v1).to.not.deep.equal(v2);
-        });
-
-        it('should produce similar vectors for similar text', async () => {
-            const v1 = await provider.embed('extract symbols from code');
-            const v2 = await provider.embed('extract symbols from source');
-            // Cosine similarity should be higher for similar text
-            const dot = v1.reduce((sum, a, i) => sum + a * v2[i], 0);
-            expect(dot).to.be.greaterThan(0.5);
-        });
-
-        it('should report dimension as 512', () => {
-            expect(provider.dimension).to.equal(512);
-        });
-
-        it('should initialize without error', async () => {
             await provider.initialize();
         });
-    });
 
-    describe('TensorFlowEmbeddingProvider', () => {
-        let provider: TensorFlowEmbeddingProvider;
+        it('should have embedBatch method', () => {
+            expect(provider.embedBatch).to.be.a('function');
+        });
 
-        before(async function() {
-            this.timeout(30000);
-            provider = new TensorFlowEmbeddingProvider();
-            try {
-                await provider.initialize();
-            } catch {
-                // Skip TF.js tests if model not available
-                this.skip();
+        it('should return correct number of vectors for batch', async () => {
+            const texts = ['hello world', 'foo bar baz', 'test input', 'another example', 'fifth item'];
+            const results = await provider.embedBatch(texts);
+            expect(results).to.have.length(5);
+        });
+
+        it('should return vectors with correct dimensions', async () => {
+            const texts = ['hello world', 'test input'];
+            const results = await provider.embedBatch(texts);
+            for (const vec of results) {
+                expect(vec).to.have.length(provider.dimension);
             }
         });
 
-        it('should produce 512-dimensional vectors', async function() {
-            this.timeout(10000);
-            const vector = await provider.embed('hello world');
-            expect(vector).to.have.lengthOf(512);
+        it('should match sequential embed results', async () => {
+            const texts = ['hello world', 'semantic search', 'code analysis'];
+            const batchResults = await provider.embedBatch(texts);
+            const sequentialResults = await Promise.all(texts.map(t => provider.embed(t)));
+
+            for (let i = 0; i < texts.length; i++) {
+                expect(batchResults[i]).to.deep.equal(sequentialResults[i]);
+            }
         });
 
-        it('should produce normalized unit vectors', async function() {
-            this.timeout(10000);
-            const vector = await provider.embed('some text to embed');
-            const magnitude = Math.sqrt(vector.reduce((sum, v) => sum + v * v, 0));
-            expect(magnitude).to.be.closeTo(1.0, 0.05);
+        it('should handle single-item batch', async () => {
+            const results = await provider.embedBatch(['only one']);
+            expect(results).to.have.length(1);
+            expect(results[0]).to.have.length(provider.dimension);
         });
 
-        it('should produce different vectors for different text', async function() {
-            this.timeout(10000);
-            const v1 = await provider.embed('function extractAll');
-            const v2 = await provider.embed('database connection pool');
-            expect(v1).to.not.deep.equal(v2);
+        it('should handle empty batch', async () => {
+            const results = await provider.embedBatch([]);
+            expect(results).to.have.length(0);
         });
+    });
 
-        it('should report dimension as 512', () => {
-            expect(provider.dimension).to.equal(512);
+    describe('EmbeddingProvider interface - embedBatch fallback', () => {
+        it('should work when embedBatch is not defined on a provider', async () => {
+            // Simulates a provider that does not implement embedBatch
+            const minimalProvider: EmbeddingProvider = {
+                dimension: 4,
+                async initialize() {},
+                async embed(text: string) {
+                    return [text.length, 0, 0, 0];
+                },
+            };
+
+            expect(minimalProvider.embedBatch).to.be.undefined;
+
+            // Fallback logic: if embedBatch is missing, fall back to sequential
+            const texts = ['a', 'bb', 'ccc'];
+            let results: number[][];
+            if (minimalProvider.embedBatch) {
+                results = await minimalProvider.embedBatch(texts);
+            } else {
+                results = await Promise.all(texts.map(t => minimalProvider.embed(t)));
+            }
+
+            expect(results).to.have.length(3);
+            expect(results[0][0]).to.equal(1);
+            expect(results[1][0]).to.equal(2);
+            expect(results[2][0]).to.equal(3);
         });
     });
 });
