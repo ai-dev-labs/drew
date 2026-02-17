@@ -13,6 +13,7 @@ export interface SummarizerSettings {
     apiKey?: string;
     aws_profile?: string;
     aws_region?: string;
+    indexing_concurrency?: number;
 }
 
 export interface Summarizer {
@@ -168,7 +169,8 @@ export async function loadSettings(): Promise<SummarizerSettings> {
                 provider: settings.provider,
                 model: settings.model || 'us.amazon.nova-lite-v1:0',
                 aws_profile: settings.aws_profile,
-                aws_region: settings.aws_region
+                aws_region: settings.aws_region,
+                indexing_concurrency: settings.indexing_concurrency,
             };
         }
 
@@ -179,7 +181,8 @@ export async function loadSettings(): Promise<SummarizerSettings> {
             return {
                 provider: settings.provider,
                 model: settings.model || 'gemini-2.5-flash-lite',
-                apiKey: settings.apiKey
+                apiKey: settings.apiKey,
+                indexing_concurrency: settings.indexing_concurrency,
             };
         }
 
@@ -187,7 +190,8 @@ export async function loadSettings(): Promise<SummarizerSettings> {
         return {
             provider: settings.provider,
             model: settings.model || 'gemini-2.5-flash-lite',
-            apiKey: settings.apiKey
+            apiKey: settings.apiKey,
+            indexing_concurrency: settings.indexing_concurrency,
         };
     } catch (err: any) {
         throw new Error(`Failed to load settings: ${err.message}`);

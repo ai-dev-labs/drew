@@ -16,8 +16,6 @@ const {
     isZVecError,
 } = require('@zvec/zvec');
 
-const PARALLEL_INDEX = 20;
-
 export interface SearchResult {
     id: string;
     type: 'node' | 'spec';
@@ -126,7 +124,7 @@ export class DrewVectorStore {
         return true;
     }
 
-    async indexAll(specMap: SpecMap): Promise<{ nodes: number; specs: number }> {
+    async indexAll(specMap: SpecMap, concurrency?: number): Promise<{ nodes: number; specs: number }> {
         if (!this.collection) throw new Error('Collection not open');
 
         const nodes = Object.values(specMap.nodes);
@@ -174,7 +172,7 @@ export class DrewVectorStore {
         }
 
         // Embed and upsert with bounded concurrency
-        await mapWithConcurrency(items, PARALLEL_INDEX, async (item) => {
+        await mapWithConcurrency(items, concurrency ?? 20, async (item) => {
             const embedding = await this.embedder.embed(item.text);
             this.collection.upsertSync({
                 id: item.id,
