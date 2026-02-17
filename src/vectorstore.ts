@@ -16,7 +16,7 @@ const {
     isZVecError,
 } = require('@zvec/zvec');
 
-const PARALLEL_INDEX = 10;
+const PARALLEL_INDEX = 20;
 
 export interface SearchResult {
     id: string;
