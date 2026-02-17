@@ -105,14 +105,7 @@ export class DrewVectorStore {
         ZVecInitialize({ logLevel: 3 }); // ERROR only
 
         if (reindex && await fs.pathExists(this.collectionPath)) {
-            // Open and destroy, then recreate
-            try {
-                const existing = ZVecOpen(this.collectionPath);
-                existing.destroySync();
-            } catch {
-                // If open fails, just remove the directory
-                await fs.remove(this.collectionPath);
-            }
+            await fs.remove(this.collectionPath);
         }
 
         if (await fs.pathExists(this.collectionPath)) {
