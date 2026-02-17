@@ -229,8 +229,16 @@ export class DrewVectorStore {
         }
 
         // ── Phase 2: Worker Thread Upserts ──
-        const workerCount = Math.min(concurrency ?? 2, 4);
-        const upsertSuccess = await this.upsertViaWorkers(embedded, workerCount);
+        // Close our collection handle so workers can acquire the lock
+        this.collection.closeSync();
+        this.collection = null;
+
+        // zvec only supports a single write handle, so use 1 worker thread.
+        // The goal is to unblock the main event loop, not parallelize writes.
+        const upsertSuccess = await this.upsertViaWorkers(embedded, 1);
+
+        // Reopen collection for optimize and subsequent operations
+        this.collection = ZVecOpen(this.collectionPath);
 
         if (!upsertSuccess) {
             // Fallback: main-thread upserts if workers failed
@@ -325,9 +333,20 @@ export class DrewVectorStore {
                     fields: item.fields,
                 }));
 
+                // Split into sub-batches and track completion
+                const subBatchSize = 50;
+                const subBatches: typeof items[] = [];
+                for (let i = 0; i < items.length; i += subBatchSize) {
+                    subBatches.push(items.slice(i, i + subBatchSize));
+                }
+                let completedSubBatches = 0;
+
                 worker.on('message', (msg: any) => {
                     if (msg.type === 'done' || msg.type === 'error') {
-                        worker.postMessage({ type: 'shutdown' });
+                        completedSubBatches++;
+                        if (completedSubBatches >= subBatches.length) {
+                            worker.postMessage({ type: 'shutdown' });
+                        }
                     }
                 });
 
@@ -339,10 +358,8 @@ export class DrewVectorStore {
                     resolve(false);
                 });
 
-                // Send items in sub-batches to avoid large message overhead
-                const subBatchSize = 50;
-                for (let i = 0; i < items.length; i += subBatchSize) {
-                    worker.postMessage({ type: 'batch', items: items.slice(i, i + subBatchSize) });
+                for (const subBatch of subBatches) {
+                    worker.postMessage({ type: 'batch', items: subBatch });
                 }
             });
         });
