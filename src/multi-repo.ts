@@ -27,22 +27,56 @@ export class MultiRepoResolver {
         this.cwdPath = path.resolve(cwdPath);
     }
 
+    private static readonly SKIP_DIRS = new Set([
+        'node_modules', '.git', '.hg', '.svn', 'dist', 'build', 'out',
+        '.drew', '.next', '.cache', 'coverage', 'target', '__pycache__',
+    ]);
+
+    private static readonly MAX_SCAN_DEPTH = 4;
+
     async discoverSiblingRepos(): Promise<RepoInfo[]> {
-        const parentDir = path.dirname(this.cwdPath);
-        const cwdName = path.basename(this.cwdPath);
         const repos: RepoInfo[] = [];
+        const seen = new Set<string>();
+
+        // Check if cwd itself has an index
+        const cwdDataPath = path.join(this.cwdPath, '.drew', '.data');
+        if (await fs.pathExists(cwdDataPath)) {
+            const name = path.basename(this.cwdPath);
+            seen.add(this.cwdPath);
+            repos.push({
+                name,
+                rootPath: this.cwdPath,
+                dataPath: cwdDataPath,
+                specMapPath: path.join(this.cwdPath, '.drew', 'spec-map.json'),
+            });
+        }
+
+        // Recursively search child directories for indexed repos
+        await this.scanDirForRepos(this.cwdPath, repos, seen);
+
+        return repos;
+    }
+
+    private async scanDirForRepos(
+        dir: string,
+        repos: RepoInfo[],
+        seen: Set<string>,
+        depth = 0,
+    ): Promise<void> {
+        if (depth >= MultiRepoResolver.MAX_SCAN_DEPTH) return;
 
         let entries: string[];
         try {
-            entries = await fs.readdir(parentDir);
+            entries = await fs.readdir(dir);
         } catch {
-            return repos;
+            return;
         }
 
         for (const entry of entries) {
-            if (entry === cwdName) continue;
+            if (MultiRepoResolver.SKIP_DIRS.has(entry)) continue;
 
-            const entryPath = path.join(parentDir, entry);
+            const entryPath = path.join(dir, entry);
+            if (seen.has(entryPath)) continue;
 
             let stat;
             try {
@@ -53,17 +87,19 @@ export class MultiRepoResolver {
             if (!stat.isDirectory()) continue;
 
             const dataPath = path.join(entryPath, '.drew', '.data');
-            if (!await fs.pathExists(dataPath)) continue;
-
-            repos.push({
-                name: entry,
-                rootPath: entryPath,
-                dataPath,
-                specMapPath: path.join(entryPath, '.drew', 'spec-map.json'),
-            });
+            if (await fs.pathExists(dataPath)) {
+                seen.add(entryPath);
+                repos.push({
+                    name: entry,
+                    rootPath: entryPath,
+                    dataPath,
+                    specMapPath: path.join(entryPath, '.drew', 'spec-map.json'),
+                });
+            } else {
+                // No index here — recurse deeper to find nested repos
+                await this.scanDirForRepos(entryPath, repos, seen, depth + 1);
+            }
         }
-
-        return repos;
     }
 
     async openAll(): Promise<{ opened: string[]; failed: string[] }> {

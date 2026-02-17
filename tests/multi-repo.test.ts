@@ -72,53 +72,49 @@ async function setupMockRepo(parentDir: string, repoName: string): Promise<strin
 }
 
 describe('MultiRepoResolver', () => {
-    let parentDir: string;
-    let cwdRepo: string;
+    let cwdDir: string;
 
     beforeEach(async function() {
         this.timeout(30000);
-        parentDir = await fs.mkdtemp(path.join(os.tmpdir(), 'drew-multi-test-'));
+        cwdDir = await fs.mkdtemp(path.join(os.tmpdir(), 'drew-multi-test-'));
 
-        // Create 3 sibling repos: repo-a, repo-b, repo-c (cwd)
-        await setupMockRepo(parentDir, 'repo-a');
-        await setupMockRepo(parentDir, 'repo-b');
-        cwdRepo = await setupMockRepo(parentDir, 'repo-c');
+        // Create child repos inside the cwd directory
+        await setupMockRepo(cwdDir, 'repo-a');
+        await setupMockRepo(cwdDir, 'repo-b');
     });
 
     afterEach(async function() {
         this.timeout(10000);
-        await fs.remove(parentDir);
+        await fs.remove(cwdDir);
     });
 
     describe('discoverSiblingRepos', () => {
-        it('should discover sibling repos with .drew/.data', async function() {
-            const resolver = new MultiRepoResolver(cwdRepo);
+        it('should discover child repos with .drew/.data', async function() {
+            const resolver = new MultiRepoResolver(cwdDir);
             const repos = await resolver.discoverSiblingRepos();
 
             expect(repos).to.be.an('array');
-            // Should find repo-a and repo-b (siblings), not repo-c (self)
             const names = repos.map(r => r.name);
             expect(names).to.include('repo-a');
             expect(names).to.include('repo-b');
-            expect(names).to.not.include('repo-c');
         });
 
         it('should skip directories without .drew/.data', async function() {
             // Create a directory without drew index
-            await fs.ensureDir(path.join(parentDir, 'not-a-repo'));
+            await fs.ensureDir(path.join(cwdDir, 'not-a-repo'));
 
-            const resolver = new MultiRepoResolver(cwdRepo);
+            const resolver = new MultiRepoResolver(cwdDir);
             const repos = await resolver.discoverSiblingRepos();
 
             const names = repos.map(r => r.name);
             expect(names).to.not.include('not-a-repo');
         });
 
-        it('should skip files in parent directory', async function() {
-            // Create a file (not directory) in parent
-            await fs.writeFile(path.join(parentDir, 'some-file.txt'), 'hello');
+        it('should skip files in cwd directory', async function() {
+            // Create a file (not directory) in cwd
+            await fs.writeFile(path.join(cwdDir, 'some-file.txt'), 'hello');
 
-            const resolver = new MultiRepoResolver(cwdRepo);
+            const resolver = new MultiRepoResolver(cwdDir);
             const repos = await resolver.discoverSiblingRepos();
 
             // Should still find the real repos without error
@@ -127,25 +123,52 @@ describe('MultiRepoResolver', () => {
             expect(names).to.include('repo-b');
         });
 
-        it('should return empty array when no siblings have .drew/.data', async function() {
-            // Create isolated dir with only the cwd repo
-            const isolatedParent = await fs.mkdtemp(path.join(os.tmpdir(), 'drew-isolated-'));
-            const isolatedRepo = await setupMockRepo(isolatedParent, 'only-repo');
+        it('should return empty array when no children have .drew/.data', async function() {
+            // Create isolated dir with no indexed children
+            const isolatedDir = await fs.mkdtemp(path.join(os.tmpdir(), 'drew-isolated-'));
 
-            const resolver = new MultiRepoResolver(isolatedRepo);
+            const resolver = new MultiRepoResolver(isolatedDir);
             const repos = await resolver.discoverSiblingRepos();
 
             expect(repos).to.be.an('array');
             expect(repos).to.have.length(0);
 
-            await fs.remove(isolatedParent);
+            await fs.remove(isolatedDir);
+        });
+
+        it('should include cwd itself if it has an index', async function() {
+            // Index the cwd directory itself
+            await setupMockRepo(path.dirname(cwdDir), path.basename(cwdDir));
+
+            const resolver = new MultiRepoResolver(cwdDir);
+            const repos = await resolver.discoverSiblingRepos();
+
+            const names = repos.map(r => r.name);
+            expect(names).to.include(path.basename(cwdDir));
+            expect(names).to.include('repo-a');
+            expect(names).to.include('repo-b');
+        });
+
+        it('should discover repos nested multiple levels deep', async function() {
+            // Create a nested structure: cwdDir/subdir/nested-repo
+            const subdir = path.join(cwdDir, 'subdir');
+            await fs.ensureDir(subdir);
+            await setupMockRepo(subdir, 'nested-repo');
+
+            const resolver = new MultiRepoResolver(cwdDir);
+            const repos = await resolver.discoverSiblingRepos();
+
+            const names = repos.map(r => r.name);
+            expect(names).to.include('nested-repo');
+            expect(names).to.include('repo-a');
+            expect(names).to.include('repo-b');
         });
     });
 
     describe('openAll', () => {
         it('should open all discovered repos', async function() {
             this.timeout(15000);
-            const resolver = new MultiRepoResolver(cwdRepo);
+            const resolver = new MultiRepoResolver(cwdDir);
             const result = await resolver.openAll();
 
             expect(result.opened).to.be.an('array');
@@ -160,10 +183,10 @@ describe('MultiRepoResolver', () => {
         it('should report repos that fail to open', async function() {
             this.timeout(15000);
             // Corrupt repo-a's data directory
-            await fs.remove(path.join(parentDir, 'repo-a', '.drew', '.data'));
-            await fs.writeFile(path.join(parentDir, 'repo-a', '.drew', '.data'), 'not a directory');
+            await fs.remove(path.join(cwdDir, 'repo-a', '.drew', '.data'));
+            await fs.writeFile(path.join(cwdDir, 'repo-a', '.drew', '.data'), 'not a directory');
 
-            const resolver = new MultiRepoResolver(cwdRepo);
+            const resolver = new MultiRepoResolver(cwdDir);
             const result = await resolver.openAll();
 
             expect(result.opened).to.include('repo-b');
@@ -178,7 +201,7 @@ describe('MultiRepoResolver', () => {
 
         beforeEach(async function() {
             this.timeout(15000);
-            resolver = new MultiRepoResolver(cwdRepo);
+            resolver = new MultiRepoResolver(cwdDir);
             await resolver.openAll();
         });
 
@@ -196,7 +219,7 @@ describe('MultiRepoResolver', () => {
             // Results should have repo field
             for (const r of results) {
                 expect(r).to.have.property('repo').that.is.a('string');
-                expect(r.repo).to.be.oneOf(['repo-a', 'repo-b']);
+                expect(r).to.have.property('repo').that.is.oneOf(['repo-a', 'repo-b']);
             }
         });
 
@@ -239,7 +262,7 @@ describe('MultiRepoResolver', () => {
 
         beforeEach(async function() {
             this.timeout(15000);
-            resolver = new MultiRepoResolver(cwdRepo);
+            resolver = new MultiRepoResolver(cwdDir);
             await resolver.openAll();
         });
 
@@ -272,7 +295,7 @@ describe('MultiRepoResolver', () => {
 
         beforeEach(async function() {
             this.timeout(15000);
-            resolver = new MultiRepoResolver(cwdRepo);
+            resolver = new MultiRepoResolver(cwdDir);
             await resolver.openAll();
         });
 
@@ -304,7 +327,7 @@ describe('MultiRepoResolver', () => {
 
         beforeEach(async function() {
             this.timeout(15000);
-            resolver = new MultiRepoResolver(cwdRepo);
+            resolver = new MultiRepoResolver(cwdDir);
             await resolver.openAll();
         });
 
@@ -342,7 +365,7 @@ describe('MultiRepoResolver', () => {
 
         beforeEach(async function() {
             this.timeout(15000);
-            resolver = new MultiRepoResolver(cwdRepo);
+            resolver = new MultiRepoResolver(cwdDir);
             await resolver.openAll();
         });
 
@@ -379,7 +402,7 @@ describe('MultiRepoResolver', () => {
     describe('helpers', () => {
         it('should list repo names after openAll', async function() {
             this.timeout(15000);
-            const resolver = new MultiRepoResolver(cwdRepo);
+            const resolver = new MultiRepoResolver(cwdDir);
             await resolver.openAll();
 
             const names = resolver.getRepoNames();
