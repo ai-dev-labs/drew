@@ -140,7 +140,7 @@ This prints a structured guide that teaches an AI agent how to use drew's search
 cat > ~/.drew/settings.json << 'EOF'
 {
   "provider": "bedrock",
-  "aws_profile": "herdapp",
+  "aws_profile": "your-profile",
   "aws_region": "us-west-2"
 }
 EOF
